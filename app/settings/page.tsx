@@ -39,7 +39,7 @@ export default function SettingsPage() {
 
     // Build tabs array based on user permissions
     const tabs = React.useMemo(() => {
-        const baseTabs = [
+        const baseTabs: Array<{ id: 'vehicles' | 'workers' | 'managers' | 'members' | 'unitprices' | 'users'; label: string; count: number | null }> = [
             { id: 'vehicles' as const, label: '車両管理', count: vehicles.length },
             { id: 'workers' as const, label: '職人管理', count: workers.length },
             { id: 'managers' as const, label: '案件担当者管理', count: managers.length },
