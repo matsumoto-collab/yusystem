@@ -37,7 +37,7 @@ export default function InvoiceForm({ initialData, onSubmit, onCancel }: Invoice
     });
     const [notes, setNotes] = useState(initialData?.notes || '');
     const [items, setItems] = useState<EstimateItem[]>(initialData?.items || [
-        { id: `item-${Date.now()}`, description: '', quantity: 1, unitPrice: 0, amount: 0 }
+        { id: `item-${Date.now()}`, description: '', quantity: 1, unitPrice: 0, amount: 0, taxType: 'standard' }
     ]);
 
     // 消費税率
@@ -52,7 +52,7 @@ export default function InvoiceForm({ initialData, onSubmit, onCancel }: Invoice
     const loadFromEstimate = (estId: string) => {
         const estimate = estimates.find(e => e.id === estId);
         if (estimate) {
-            setProjectId(estimate.projectId);
+            setProjectId(estimate.projectId ?? '');
             setTitle(estimate.title);
             setItems(estimate.items);
             setNotes(estimate.notes || '');
@@ -66,7 +66,8 @@ export default function InvoiceForm({ initialData, onSubmit, onCancel }: Invoice
             description: '',
             quantity: 1,
             unitPrice: 0,
-            amount: 0
+            amount: 0,
+            taxType: 'standard'
         }]);
     };
 
