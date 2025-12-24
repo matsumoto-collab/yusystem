@@ -1,0 +1,504 @@
+'use client';
+
+import React, { useState, useMemo } from 'react';
+import { Project, EventCategory, CATEGORY_COLORS, ConstructionType, CONSTRUCTION_TYPE_COLORS, CONSTRUCTION_TYPE_LABELS, DailySchedule, WorkSchedule } from '@/types/calendar';
+import { useMasterData } from '@/hooks/useMasterData';
+import { useProjects } from '@/contexts/ProjectContext';
+import { formatDateKey } from '@/utils/employeeUtils';
+import VehicleModal from '../VehicleModal';
+import MultiDayScheduleEditor from './MultiDayScheduleEditor';
+import { Plus } from 'lucide-react';
+import { v4 as uuidv4 } from 'uuid';
+
+interface ProjectFormProps {
+    initialData?: Partial<Project>;
+    onSubmit: (data: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>) => void;
+    onCancel: () => void;
+    defaultDate?: Date;
+    defaultEmployeeId?: string;
+}
+
+export default function ProjectForm({
+    initialData,
+    onSubmit,
+    onCancel,
+    defaultDate,
+    defaultEmployeeId,
+}: ProjectFormProps) {
+    const { projects } = useProjects();
+    const { vehicles: mockVehicles, managers: mockManagers, totalMembers: TOTAL_MEMBERS } = useMasterData();
+
+    const [formData, setFormData] = useState({
+        title: initialData?.title || '',
+        customer: initialData?.customer || '',
+        selectedManagers: Array.isArray(initialData?.createdBy)
+            ? initialData.createdBy
+            : initialData?.createdBy
+                ? [initialData.createdBy]
+                : [], // 案件担当者(複数選択)
+        memberCount: initialData?.workers?.length || 0, // メンバー数
+        selectedVehicles: initialData?.trucks || [],
+        // 工事種別(複数選択可能)
+        hasAssembly: initialData?.assemblyStartDate != null || initialData?.constructionType === 'assembly',
+        hasDemolition: initialData?.demolitionStartDate != null || initialData?.constructionType === 'demolition',
+        // 組立日程
+        assemblyStartDate: initialData?.assemblyStartDate || (initialData?.constructionType === 'assembly' ? initialData?.startDate : undefined),
+        assemblyEndDate: initialData?.assemblyEndDate,
+        // 解体日程
+        demolitionStartDate: initialData?.demolitionStartDate || (initialData?.constructionType === 'demolition' ? initialData?.startDate : undefined),
+        demolitionEndDate: initialData?.demolitionEndDate,
+        status: initialData?.status || 'pending' as const,
+        category: initialData?.category || 'construction' as EventCategory,
+        remarks: initialData?.remarks || '',
+    });
+
+    // 複数日スケジュール管理用の状態
+    const [useMultiDaySchedule, setUseMultiDaySchedule] = useState(false);
+    const [assemblySchedules, setAssemblySchedules] = useState<DailySchedule[]>([]);
+    const [demolitionSchedules, setDemolitionSchedules] = useState<DailySchedule[]>([]);
+
+    const [isVehicleModalOpen, setIsVehicleModalOpen] = useState(false);
+
+    // 残りのメンバー数を計算
+    const availableMembers = useMemo(() => {
+        const targetDate = initialData?.startDate || defaultDate || new Date();
+        const dateKey = formatDateKey(targetDate);
+
+        // 同じ日付の全案件を取得
+        const sameDateProjects = projects.filter(p => {
+            const pDateKey = formatDateKey(p.startDate);
+            return pDateKey === dateKey && p.id !== initialData?.id;
+        });
+
+        // 使用中のメンバー数を合計
+        const usedMembers = sameDateProjects.reduce((sum, p) => {
+            return sum + (p.workers?.length || 0);
+        }, 0);
+
+        // 総メンバー数（マスターデータから取得）
+        return TOTAL_MEMBERS - usedMembers;
+    }, [projects, initialData, defaultDate]);
+
+    const handleVehicleToggle = (vehicleName: string) => {
+        setFormData(prev => ({
+            ...prev,
+            selectedVehicles: prev.selectedVehicles.includes(vehicleName)
+                ? prev.selectedVehicles.filter(v => v !== vehicleName)
+                : [...prev.selectedVehicles, vehicleName]
+        }));
+    };
+
+    const handleManagerToggle = (managerName: string) => {
+        setFormData(prev => ({
+            ...prev,
+            selectedManagers: prev.selectedManagers.includes(managerName)
+                ? prev.selectedManagers.filter(m => m !== managerName)
+                : [...prev.selectedManagers, managerName]
+        }));
+    };
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+
+        // バリデーション: 少なくとも組立か解体のどちらか1つは選択必須
+        if (!formData.hasAssembly && !formData.hasDemolition) {
+            alert('組立または解体のいずれかを選択してください');
+            return;
+        }
+
+        // メンバー数分のダミー配列を作成
+        const workers = formData.memberCount > 0
+            ? Array.from({ length: formData.memberCount }, (_, i) => `メンバー${i + 1}`)
+            : undefined;
+
+        // 最初の日程をstartDateに設定(後方互換性のため)
+        const startDate = formData.hasAssembly && formData.assemblyStartDate
+            ? formData.assemblyStartDate
+            : formData.hasDemolition && formData.demolitionStartDate
+                ? formData.demolitionStartDate
+                : initialData?.startDate || defaultDate || new Date();
+
+        // 色の決定: 組立のみなら青、解体のみなら赤、両方なら青
+        const color = formData.hasAssembly
+            ? CONSTRUCTION_TYPE_COLORS.assembly
+            : CONSTRUCTION_TYPE_COLORS.demolition;
+
+        // 複数日スケジュールを使用する場合
+        let workSchedules: WorkSchedule[] | undefined = undefined;
+        if (useMultiDaySchedule) {
+            workSchedules = [];
+            if (formData.hasAssembly && assemblySchedules.length > 0) {
+                workSchedules.push({
+                    id: uuidv4(),
+                    type: 'assembly',
+                    dailySchedules: assemblySchedules,
+                });
+            }
+            if (formData.hasDemolition && demolitionSchedules.length > 0) {
+                workSchedules.push({
+                    id: uuidv4(),
+                    type: 'demolition',
+                    dailySchedules: demolitionSchedules,
+                });
+            }
+        }
+
+        const projectData: Omit<Project, 'id' | 'createdAt' | 'updatedAt'> = {
+            title: formData.title,
+            customer: formData.customer || undefined,
+            createdBy: formData.selectedManagers.length > 0 ? formData.selectedManagers : undefined,
+            startDate: startDate,
+            assignedEmployeeId: initialData?.assignedEmployeeId || defaultEmployeeId || 'unassigned',
+            workers: workers,
+            trucks: formData.selectedVehicles.length > 0 ? formData.selectedVehicles : undefined,
+            // 複数日スケジュール
+            workSchedules: workSchedules,
+            // 組立・解体の日程（後方互換性のため、複数日スケジュールを使わない場合のみ）
+            assemblyStartDate: !useMultiDaySchedule && formData.hasAssembly ? formData.assemblyStartDate : undefined,
+            assemblyEndDate: !useMultiDaySchedule && formData.hasAssembly ? formData.assemblyEndDate : undefined,
+            demolitionStartDate: !useMultiDaySchedule && formData.hasDemolition ? formData.demolitionStartDate : undefined,
+            demolitionEndDate: !useMultiDaySchedule && formData.hasDemolition ? formData.demolitionEndDate : undefined,
+            status: formData.status,
+            category: formData.category,
+            color: color,
+            remarks: formData.remarks || undefined,
+        };
+
+        onSubmit(projectData);
+    };
+
+    return (
+        <form onSubmit={handleSubmit} className="space-y-4">
+            {/* 現場名 */}
+            <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                    現場名 <span className="text-red-500">*</span>
+                </label>
+                <input
+                    type="text"
+                    required
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="例: 帝人"
+                />
+            </div>
+
+            {/* 元請名 */}
+            <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                    元請名
+                </label>
+                <input
+                    type="text"
+                    value={formData.customer}
+                    onChange={(e) => setFormData({ ...formData, customer: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="例: 長浜機設"
+                />
+            </div>
+
+            {/* 工事種別（チェックボックス） */}
+            <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                    工事種別 <span className="text-red-500">*</span>
+                </label>
+                <div className="space-y-3 border border-gray-200 rounded-md p-4">
+                    {/* 組立 */}
+                    <div className="space-y-2">
+                        <label className="flex items-center space-x-2 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={formData.hasAssembly}
+                                onChange={(e) => setFormData({ ...formData, hasAssembly: e.target.checked })}
+                                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                            />
+                            <span
+                                className="text-sm font-medium px-3 py-1 rounded-full"
+                                style={{
+                                    backgroundColor: `${CONSTRUCTION_TYPE_COLORS.assembly}20`,
+                                    color: CONSTRUCTION_TYPE_COLORS.assembly,
+                                    border: `2px solid ${CONSTRUCTION_TYPE_COLORS.assembly}`
+                                }}
+                            >
+                                組立
+                            </span>
+                        </label>
+                        {formData.hasAssembly && (
+                            <div className="ml-6 grid grid-cols-2 gap-3">
+                                <div>
+                                    <label className="block text-xs text-gray-600 mb-1">開始日</label>
+                                    <input
+                                        type="date"
+                                        value={formData.assemblyStartDate ? formData.assemblyStartDate.toISOString().split('T')[0] : ''}
+                                        onChange={(e) => setFormData({ ...formData, assemblyStartDate: e.target.value ? new Date(e.target.value) : undefined })}
+                                        className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs text-gray-600 mb-1">終了日</label>
+                                    <input
+                                        type="date"
+                                        value={formData.assemblyEndDate ? formData.assemblyEndDate.toISOString().split('T')[0] : ''}
+                                        onChange={(e) => setFormData({ ...formData, assemblyEndDate: e.target.value ? new Date(e.target.value) : undefined })}
+                                        className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* 解体 */}
+                    <div className="space-y-2">
+                        <label className="flex items-center space-x-2 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={formData.hasDemolition}
+                                onChange={(e) => setFormData({ ...formData, hasDemolition: e.target.checked })}
+                                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                            />
+                            <span
+                                className="text-sm font-medium px-3 py-1 rounded-full"
+                                style={{
+                                    backgroundColor: `${CONSTRUCTION_TYPE_COLORS.demolition}20`,
+                                    color: CONSTRUCTION_TYPE_COLORS.demolition,
+                                    border: `2px solid ${CONSTRUCTION_TYPE_COLORS.demolition}`
+                                }}
+                            >
+                                解体
+                            </span>
+                        </label>
+                        {formData.hasDemolition && (
+                            <div className="ml-6 grid grid-cols-2 gap-3">
+                                <div>
+                                    <label className="block text-xs text-gray-600 mb-1">開始日</label>
+                                    <input
+                                        type="date"
+                                        value={formData.demolitionStartDate ? formData.demolitionStartDate.toISOString().split('T')[0] : ''}
+                                        onChange={(e) => setFormData({ ...formData, demolitionStartDate: e.target.value ? new Date(e.target.value) : undefined })}
+                                        className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs text-gray-600 mb-1">終了日</label>
+                                    <input
+                                        type="date"
+                                        value={formData.demolitionEndDate ? formData.demolitionEndDate.toISOString().split('T')[0] : ''}
+                                        onChange={(e) => setFormData({ ...formData, demolitionEndDate: e.target.value ? new Date(e.target.value) : undefined })}
+                                        className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* 複数日スケジュール管理 */}
+            <div>
+                <div className="flex items-center justify-between mb-3">
+                    <label className="block text-sm font-medium text-gray-700">
+                        複数日スケジュール管理
+                    </label>
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                        <input
+                            type="checkbox"
+                            checked={useMultiDaySchedule}
+                            onChange={(e) => setUseMultiDaySchedule(e.target.checked)}
+                            className="w-4 h-4 text-slate-600 border-gray-300 rounded focus:ring-slate-500"
+                        />
+                        <span className="text-sm text-gray-600">複数日の作業を登録</span>
+                    </label>
+                </div>
+
+                {useMultiDaySchedule && (
+                    <div className="space-y-4 border border-gray-200 rounded-md p-4 bg-gray-50">
+                        {/* 組立スケジュール */}
+                        {formData.hasAssembly && (
+                            <div className="bg-white p-4 rounded-lg border border-blue-200">
+                                <h3 className="text-lg font-semibold text-blue-700 mb-3">組立スケジュール</h3>
+                                <MultiDayScheduleEditor
+                                    type="assembly"
+                                    dailySchedules={assemblySchedules}
+                                    onChange={setAssemblySchedules}
+                                />
+                            </div>
+                        )}
+
+                        {/* 解体スケジュール */}
+                        {formData.hasDemolition && (
+                            <div className="bg-white p-4 rounded-lg border border-red-200">
+                                <h3 className="text-lg font-semibold text-red-700 mb-3">解体スケジュール</h3>
+                                <MultiDayScheduleEditor
+                                    type="demolition"
+                                    dailySchedules={demolitionSchedules}
+                                    onChange={setDemolitionSchedules}
+                                />
+                            </div>
+                        )}
+
+                        {!formData.hasAssembly && !formData.hasDemolition && (
+                            <p className="text-sm text-gray-500 text-center py-4">
+                                工事種別を選択してください
+                            </p>
+                        )}
+                    </div>
+                )}
+            </div>
+
+            {/* 案件担当者（チェックボックス） */}
+            <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                    案件担当者
+                </label>
+                <div className="grid grid-cols-2 gap-2 border border-gray-200 rounded-md p-3">
+                    {mockManagers.map(manager => (
+                        <label key={manager.id} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                            <input
+                                type="checkbox"
+                                checked={formData.selectedManagers.includes(manager.name)}
+                                onChange={() => handleManagerToggle(manager.name)}
+                                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                            />
+                            <span className="text-sm text-gray-700">{manager.name}</span>
+                        </label>
+                    ))}
+                </div>
+                {formData.selectedManagers.length > 0 && (
+                    <p className="text-xs text-gray-500 mt-1">
+                        選択中: {formData.selectedManagers.length}名
+                    </p>
+                )}
+            </div>
+
+            {/* メンバー数（選択式） */}
+            <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                    メンバー数
+                </label>
+                <select
+                    value={formData.memberCount}
+                    onChange={(e) => setFormData({ ...formData, memberCount: parseInt(e.target.value) })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                    {Array.from({ length: Math.min(availableMembers + formData.memberCount, TOTAL_MEMBERS) + 1 }, (_, i) => (
+                        <option key={i} value={i}>
+                            {i}人
+                        </option>
+                    ))}
+                </select>
+                <p className="text-xs text-gray-500 mt-1">
+                    残り: {availableMembers}人
+                </p>
+            </div>
+
+            {/* 車両（チェックボックス） */}
+            <div>
+                <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                        車両
+                    </label>
+                    <button
+                        type="button"
+                        onClick={() => setIsVehicleModalOpen(true)}
+                        className="flex items-center gap-1 px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                    >
+                        <Plus className="w-4 h-4" />
+                        追加
+                    </button>
+                </div>
+                <div className="grid grid-cols-1 gap-2 max-h-40 overflow-y-auto border border-gray-200 rounded-md p-3">
+                    {mockVehicles.map(vehicle => (
+                        <label key={vehicle.id} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                            <input
+                                type="checkbox"
+                                checked={formData.selectedVehicles.includes(vehicle.name)}
+                                onChange={() => handleVehicleToggle(vehicle.name)}
+                                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                            />
+                            <span className="text-sm text-gray-700">{vehicle.name}</span>
+                        </label>
+                    ))}
+                </div>
+                {formData.selectedVehicles.length > 0 && (
+                    <p className="text-xs text-gray-500 mt-1">
+                        選択中: {formData.selectedVehicles.length}台
+                    </p>
+                )}
+            </div>
+
+            {/* VehicleModal */}
+            <VehicleModal
+                isOpen={isVehicleModalOpen}
+                onClose={() => setIsVehicleModalOpen(false)}
+            />
+
+            {/* ステータス */}
+            <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                    ステータス
+                </label>
+                <select
+                    value={formData.status}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                    <option value="pending">保留</option>
+                    <option value="confirmed">確定</option>
+                    <option value="completed">完了</option>
+                    <option value="cancelled">中止</option>
+                </select>
+            </div>
+
+            {/* カテゴリー */}
+            <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                    カテゴリー
+                </label>
+                <select
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value as EventCategory })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                    <option value="construction">建設</option>
+                    <option value="maintenance">メンテナンス</option>
+                    <option value="meeting">会議</option>
+                    <option value="delivery">配送</option>
+                    <option value="inspection">検査</option>
+                    <option value="other">その他</option>
+                </select>
+            </div>
+
+            {/* 備考 */}
+            <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                    備考
+                </label>
+                <textarea
+                    value={formData.remarks}
+                    onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="備考を入力"
+                />
+            </div>
+
+            {/* ボタン */}
+            <div className="flex gap-3 pt-4">
+                <button
+                    type="button"
+                    onClick={onCancel}
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                    キャンセル
+                </button>
+                <button
+                    type="submit"
+                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                >
+                    保存
+                </button>
+            </div>
+        </form>
+    );
+}

@@ -1,0 +1,220 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { Estimate } from '@/types/estimate';
+import { Project } from '@/types/calendar';
+import { CompanyInfo } from '@/types/company';
+import { generateEstimatePDFBlob, exportEstimatePDF } from '@/utils/pdfGenerator';
+import { X, FileDown, Printer, Trash2, Edit, ExternalLink } from 'lucide-react';
+
+interface EstimateDetailModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    estimate: Estimate | null;
+    project: Project | null;
+    companyInfo: CompanyInfo;
+    onDelete: (id: string) => void;
+    onEdit: (estimate: Estimate) => void;
+}
+
+export default function EstimateDetailModal({
+    isOpen,
+    onClose,
+    estimate,
+    project,
+    companyInfo,
+    onDelete,
+    onEdit,
+}: EstimateDetailModalProps) {
+    const [pdfUrl, setPdfUrl] = useState<string>('');
+    const [activeTab, setActiveTab] = useState<'estimate' | 'budget'>('estimate');
+
+    useEffect(() => {
+        if (isOpen && estimate && project && companyInfo) {
+            try {
+                const url = generateEstimatePDFBlob(estimate, project, companyInfo);
+                setPdfUrl(url);
+
+                // クリーンアップ
+                return () => {
+                    if (url) {
+                        URL.revokeObjectURL(url);
+                    }
+                };
+            } catch (error) {
+                console.error('PDF生成エラー:', error);
+            }
+        }
+    }, [isOpen, estimate, project, companyInfo]);
+
+    const handleDownload = () => {
+        if (estimate && project && companyInfo) {
+            exportEstimatePDF(estimate, project, companyInfo);
+        }
+    };
+
+    const handlePrint = () => {
+        window.print();
+    };
+
+    const handleDelete = () => {
+        if (estimate && confirm('この見積書を削除しますか？')) {
+            onDelete(estimate.id);
+            onClose();
+        }
+    };
+
+    const handleEdit = () => {
+        if (estimate) {
+            onEdit(estimate);
+            onClose();
+        }
+    };
+
+    if (!isOpen || !estimate || !project) {
+        return null;
+    }
+
+    return (
+        <>
+            {/* オーバーレイ */}
+            <div
+                className="fixed inset-0 bg-black bg-opacity-50 z-40"
+                onClick={onClose}
+            />
+
+            {/* モーダル */}
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div className="bg-white rounded-xl shadow-2xl w-full max-w-6xl h-[90vh] flex flex-col">
+                    {/* ヘッダー */}
+                    <div className="bg-white border-b border-gray-200 px-6 py-4 rounded-t-xl">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <div>
+                                    <div className="text-sm text-gray-500">見積書</div>
+                                    <h2 className="text-2xl font-bold text-gray-800">
+                                        {project.title}
+                                    </h2>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={handleEdit}
+                                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                                >
+                                    <Edit size={18} />
+                                    編集
+                                </button>
+                                <button
+                                    onClick={onClose}
+                                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                                >
+                                    <X size={24} />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* アクションバー */}
+                    <div className="bg-white border-b border-gray-200 px-6 py-3">
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={handleDownload}
+                                className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                                title="PDF出力"
+                            >
+                                <FileDown size={18} />
+                                <span className="hidden sm:inline">PDF出力</span>
+                            </button>
+                            <button
+                                onClick={handlePrint}
+                                className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                                title="印刷"
+                            >
+                                <Printer size={18} />
+                                <span className="hidden sm:inline">印刷</span>
+                            </button>
+                            <button
+                                onClick={handleDelete}
+                                className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
+                                title="削除"
+                            >
+                                <Trash2 size={18} />
+                                <span className="hidden sm:inline">削除</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* タブ */}
+                    <div className="bg-white border-b border-gray-200 px-6">
+                        <div className="flex gap-6">
+                            <button
+                                onClick={() => setActiveTab('estimate')}
+                                className={`py-3 px-2 border-b-2 transition-colors ${activeTab === 'estimate'
+                                        ? 'border-blue-500 text-blue-600 font-medium'
+                                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                                    }`}
+                            >
+                                見積書
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('budget')}
+                                className={`py-3 px-2 border-b-2 transition-colors ${activeTab === 'budget'
+                                        ? 'border-blue-500 text-blue-600 font-medium'
+                                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                                    }`}
+                            >
+                                予算書
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* PDFプレビュー */}
+                    <div className="flex-1 overflow-hidden bg-gray-100">
+                        {activeTab === 'estimate' ? (
+                            pdfUrl ? (
+                                <iframe
+                                    src={pdfUrl}
+                                    className="w-full h-full border-0"
+                                    title="見積書プレビュー"
+                                />
+                            ) : (
+                                <div className="flex items-center justify-center h-full">
+                                    <div className="text-center">
+                                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                                        <p className="text-gray-600">PDFを読み込んでいます...</p>
+                                    </div>
+                                </div>
+                            )
+                        ) : (
+                            <div className="flex items-center justify-center h-full">
+                                <div className="text-center text-gray-500">
+                                    <p className="text-lg">予算書機能は今後実装予定です</p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* 印刷用スタイル */}
+                    <style jsx global>{`
+                        @media print {
+                            body * {
+                                visibility: hidden;
+                            }
+                            iframe, iframe * {
+                                visibility: visible;
+                            }
+                            iframe {
+                                position: absolute;
+                                left: 0;
+                                top: 0;
+                                width: 100%;
+                                height: 100%;
+                            }
+                        }
+                    `}</style>
+                </div>
+            </div>
+        </>
+    );
+}

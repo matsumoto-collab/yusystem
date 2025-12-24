@@ -1,0 +1,191 @@
+'use client';
+
+import React from 'react';
+import { useNavigation } from '@/contexts/NavigationContext';
+import { useSession, signOut } from 'next-auth/react';
+import {
+    Home,
+    Briefcase,
+    FileText,
+    FileSpreadsheet,
+    Receipt,
+    ShoppingCart,
+    Users,
+    Building,
+    Settings,
+    HelpCircle,
+    LogOut,
+    ChevronRight,
+    User as UserIcon,
+} from 'lucide-react';
+
+interface NavItem {
+    name: string;
+    icon: React.ElementType;
+    page: 'schedule' | 'projects' | 'reports' | 'estimates' | 'invoices' | 'orders' | 'partners' | 'customers' | 'company' | 'settings';
+}
+
+interface NavSection {
+    title: string;
+    items: NavItem[];
+}
+
+const navigationSections: NavSection[] = [
+    {
+        title: '業務管理',
+        items: [
+            { name: 'スケジュール管理', icon: Home, page: 'schedule' },
+            { name: '案件一覧', icon: Briefcase, page: 'projects' },
+            { name: '日報一覧', icon: FileText, page: 'reports' },
+        ],
+    },
+    {
+        title: '書類・経理',
+        items: [
+            { name: '見積書', icon: FileSpreadsheet, page: 'estimates' },
+            { name: '請求書', icon: Receipt, page: 'invoices' },
+            { name: '発注書', icon: ShoppingCart, page: 'orders' },
+        ],
+    },
+    {
+        title: 'マスター・設定',
+        items: [
+            { name: '協力会社', icon: Users, page: 'partners' },
+            { name: '顧客管理', icon: Building, page: 'customers' },
+            { name: '自社情報', icon: Building, page: 'company' },
+            { name: '設定', icon: Settings, page: 'settings' },
+        ],
+    },
+];
+
+export default function Sidebar() {
+    const { activePage, setActivePage } = useNavigation();
+    const { data: session } = useSession();
+
+    const handleLogout = async () => {
+        if (confirm('ログアウトしますか？')) {
+            await signOut({ callbackUrl: '/login' });
+        }
+    };
+
+    // Map page to name for active state
+    const getActiveItemName = () => {
+        const allItems = navigationSections.flatMap(section => section.items);
+        const activeItem = allItems.find(item => item.page === activePage);
+        return activeItem?.name || 'スケジュール管理';
+    };
+
+    const getRoleBadgeColor = (role: string) => {
+        switch (role) {
+            case 'admin':
+                return 'bg-purple-500/20 text-purple-300 ring-purple-500/30';
+            case 'manager':
+                return 'bg-blue-500/20 text-blue-300 ring-blue-500/30';
+            case 'user':
+                return 'bg-green-500/20 text-green-300 ring-green-500/30';
+            case 'viewer':
+                return 'bg-gray-500/20 text-gray-300 ring-gray-500/30';
+            default:
+                return 'bg-gray-500/20 text-gray-300 ring-gray-500/30';
+        }
+    };
+
+    const getRoleLabel = (role: string) => {
+        switch (role) {
+            case 'admin':
+                return '管理者';
+            case 'manager':
+                return 'マネージャー';
+            case 'user':
+                return 'ユーザー';
+            case 'viewer':
+                return '閲覧者';
+            default:
+                return role;
+        }
+    };
+
+    return (
+        <aside className="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 border-r border-slate-700/50 flex flex-col shadow-2xl">
+            {/* Logo Area */}
+            <div className="h-16 flex items-center px-6 border-b border-slate-700/50 bg-gradient-to-r from-slate-800/50 to-transparent">
+                <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 bg-gradient-to-br from-slate-600 via-slate-700 to-slate-800 rounded-xl flex items-center justify-center shadow-lg ring-2 ring-slate-600/30">
+                        <Building className="w-5 h-5 text-slate-100" />
+                    </div>
+                    <span className="text-xl font-bold bg-gradient-to-r from-slate-50 to-slate-300 bg-clip-text text-transparent">YuSystem</span>
+                </div>
+            </div>
+
+            {/* User Info */}
+            {session?.user && (
+                <div className="px-3 py-4 border-b border-slate-700/50">
+                    <div className="flex items-center gap-3 px-3 py-2 bg-slate-800/50 rounded-xl">
+                        <div className="w-10 h-10 bg-gradient-to-br from-slate-600 to-slate-700 rounded-full flex items-center justify-center ring-2 ring-slate-600/30">
+                            <UserIcon className="w-5 h-5 text-slate-200" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-slate-200 truncate">
+                                {session.user.name || session.user.username}
+                            </p>
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ring-1 ${getRoleBadgeColor(session.user.role)}`}>
+                                {getRoleLabel(session.user.role)}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Navigation Menu */}
+            <nav className="flex-1 overflow-y-auto py-6 px-3">
+                {navigationSections.map((section, sectionIndex) => (
+                    <div key={section.title} className={sectionIndex > 0 ? 'mt-8' : ''}>
+                        <h3 className="px-3 mb-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                            {section.title}
+                        </h3>
+                        <ul className="space-y-1.5">
+                            {section.items.map((item) => {
+                                const Icon = item.icon;
+                                const isActive = activePage === item.page;
+
+                                return (
+                                    <li key={item.name}>
+                                        <button
+                                            onClick={() => setActivePage(item.page)}
+                                            className={`
+                        w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200
+                        ${isActive
+                                                    ? 'bg-gradient-to-r from-slate-700 to-slate-600 text-white shadow-lg shadow-slate-900/50 scale-[1.02] ring-1 ring-slate-500/50'
+                                                    : 'text-slate-300 hover:bg-slate-800/50 hover:text-white hover:scale-[1.01]'
+                                                }
+                      `}
+                                        >
+                                            <Icon className={`w-5 h-5 ${isActive ? 'text-slate-100' : 'text-slate-400'}`} />
+                                            <span className="flex-1 text-left">{item.name}</span>
+                                            {isActive && <ChevronRight className="w-4 h-4 text-slate-300" />}
+                                        </button>
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    </div>
+                ))}
+            </nav>
+
+            {/* Utility Area */}
+            <div className="border-t border-slate-700/50 p-3 space-y-1.5 bg-gradient-to-t from-slate-800/30 to-transparent">
+                <button className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800/50 hover:text-white transition-all duration-200 hover:scale-[1.01]">
+                    <HelpCircle className="w-5 h-5 text-slate-400" />
+                    <span>ヘルプ</span>
+                </button>
+                <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-red-300 hover:bg-red-900/20 hover:text-red-200 transition-all duration-200 hover:scale-[1.01]"
+                >
+                    <LogOut className="w-5 h-5 text-red-400" />
+                    <span>ログアウト</span>
+                </button>
+            </div>
+        </aside>
+    );
+}
