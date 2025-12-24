@@ -17,15 +17,28 @@ type PageType =
 interface NavigationContextType {
     activePage: PageType;
     setActivePage: (page: PageType) => void;
+    isMobileMenuOpen: boolean;
+    toggleMobileMenu: () => void;
+    closeMobileMenu: () => void;
 }
 
 const NavigationContext = createContext<NavigationContextType | undefined>(undefined);
 
 export function NavigationProvider({ children }: { children: ReactNode }) {
     const [activePage, setActivePage] = useState<PageType>('schedule');
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    const toggleMobileMenu = () => setIsMobileMenuOpen(prev => !prev);
+    const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
     return (
-        <NavigationContext.Provider value={{ activePage, setActivePage }}>
+        <NavigationContext.Provider value={{
+            activePage,
+            setActivePage,
+            isMobileMenuOpen,
+            toggleMobileMenu,
+            closeMobileMenu,
+        }}>
             {children}
         </NavigationContext.Provider>
     );

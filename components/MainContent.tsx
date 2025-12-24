@@ -58,12 +58,6 @@ export default function MainContent() {
             case 'reports':
                 return <PlaceholderPage title="日報一覧" />;
 
-            case 'estimates':
-                return <PlaceholderPage title="見積書" />;
-
-            case 'invoices':
-                return <PlaceholderPage title="請求書" />;
-
             case 'orders':
                 return <PlaceholderPage title="発注書" />;
 
@@ -82,8 +76,16 @@ export default function MainContent() {
     };
 
     return (
-        <main className="fixed top-0 left-64 right-0 bottom-0 bg-gradient-to-br from-slate-50 via-white to-slate-100 overflow-auto">
-            <div className={`${activePage === 'schedule' ? 'p-6 h-full flex flex-col' : ''}`}>
+        <main className="
+            fixed top-0 bottom-0 bg-gradient-to-br from-slate-50 via-white to-slate-100 overflow-auto
+            
+            /* Mobile: Full width with top padding for header */
+            left-0 right-0 pt-16
+            
+            /* Desktop: Offset by sidebar width, no top padding */
+            lg:left-64 lg:pt-0
+        ">
+            <div className={`${activePage === 'schedule' ? 'p-4 sm:p-6 h-full flex flex-col' : 'p-4 sm:p-6'}`}>
                 {renderContent()}
             </div>
         </main>

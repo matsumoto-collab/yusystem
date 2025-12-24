@@ -17,6 +17,7 @@ import {
     LogOut,
     ChevronRight,
     User as UserIcon,
+    X,
 } from 'lucide-react';
 
 interface NavItem {
@@ -59,7 +60,7 @@ const navigationSections: NavSection[] = [
 ];
 
 export default function Sidebar() {
-    const { activePage, setActivePage } = useNavigation();
+    const { activePage, setActivePage, isMobileMenuOpen, closeMobileMenu } = useNavigation();
     const { data: session } = useSession();
 
     const handleLogout = async () => {
@@ -68,11 +69,9 @@ export default function Sidebar() {
         }
     };
 
-    // Map page to name for active state
-    const getActiveItemName = () => {
-        const allItems = navigationSections.flatMap(section => section.items);
-        const activeItem = allItems.find(item => item.page === activePage);
-        return activeItem?.name || 'スケジュール管理';
+    const handleNavigation = (page: any) => {
+        setActivePage(page);
+        closeMobileMenu(); // Close mobile menu after navigation
     };
 
     const getRoleBadgeColor = (role: string) => {
@@ -106,86 +105,112 @@ export default function Sidebar() {
     };
 
     return (
-        <aside className="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 border-r border-slate-700/50 flex flex-col shadow-2xl">
-            {/* Logo Area */}
-            <div className="h-16 flex items-center px-6 border-b border-slate-700/50 bg-gradient-to-r from-slate-800/50 to-transparent">
-                <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 bg-gradient-to-br from-slate-600 via-slate-700 to-slate-800 rounded-xl flex items-center justify-center shadow-lg ring-2 ring-slate-600/30">
-                        <Building className="w-5 h-5 text-slate-100" />
-                    </div>
-                    <span className="text-xl font-bold bg-gradient-to-r from-slate-50 to-slate-300 bg-clip-text text-transparent">YuSystem</span>
-                </div>
-            </div>
-
-            {/* User Info */}
-            {session?.user && (
-                <div className="px-3 py-4 border-b border-slate-700/50">
-                    <div className="flex items-center gap-3 px-3 py-2 bg-slate-800/50 rounded-xl">
-                        <div className="w-10 h-10 bg-gradient-to-br from-slate-600 to-slate-700 rounded-full flex items-center justify-center ring-2 ring-slate-600/30">
-                            <UserIcon className="w-5 h-5 text-slate-200" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-slate-200 truncate">
-                                {session.user.name || session.user.username}
-                            </p>
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ring-1 ${getRoleBadgeColor(session.user.role)}`}>
-                                {getRoleLabel(session.user.role)}
-                            </span>
-                        </div>
-                    </div>
-                </div>
+        <>
+            {/* Mobile Backdrop */}
+            {isMobileMenuOpen && (
+                <div
+                    className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+                    onClick={closeMobileMenu}
+                />
             )}
 
-            {/* Navigation Menu */}
-            <nav className="flex-1 overflow-y-auto py-6 px-3">
-                {navigationSections.map((section, sectionIndex) => (
-                    <div key={section.title} className={sectionIndex > 0 ? 'mt-8' : ''}>
-                        <h3 className="px-3 mb-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                            {section.title}
-                        </h3>
-                        <ul className="space-y-1.5">
-                            {section.items.map((item) => {
-                                const Icon = item.icon;
-                                const isActive = activePage === item.page;
-
-                                return (
-                                    <li key={item.name}>
-                                        <button
-                                            onClick={() => setActivePage(item.page)}
-                                            className={`
-                        w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200
-                        ${isActive
-                                                    ? 'bg-gradient-to-r from-slate-700 to-slate-600 text-white shadow-lg shadow-slate-900/50 scale-[1.02] ring-1 ring-slate-500/50'
-                                                    : 'text-slate-300 hover:bg-slate-800/50 hover:text-white hover:scale-[1.01]'
-                                                }
-                      `}
-                                        >
-                                            <Icon className={`w-5 h-5 ${isActive ? 'text-slate-100' : 'text-slate-400'}`} />
-                                            <span className="flex-1 text-left">{item.name}</span>
-                                            {isActive && <ChevronRight className="w-4 h-4 text-slate-300" />}
-                                        </button>
-                                    </li>
-                                );
-                            })}
-                        </ul>
+            {/* Sidebar */}
+            <aside
+                className={`
+                    fixed left-0 top-0 h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 
+                    border-r border-slate-700/50 flex flex-col shadow-2xl z-50 transition-transform duration-300
+                    w-64
+                    ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+                    lg:translate-x-0
+                `}
+            >
+                {/* Logo Area */}
+                <div className="h-16 flex items-center px-6 border-b border-slate-700/50 bg-gradient-to-r from-slate-800/50 to-transparent">
+                    <div className="flex items-center gap-3 flex-1">
+                        <div className="w-9 h-9 bg-gradient-to-br from-slate-600 via-slate-700 to-slate-800 rounded-xl flex items-center justify-center shadow-lg ring-2 ring-slate-600/30">
+                            <Building className="w-5 h-5 text-slate-100" />
+                        </div>
+                        <span className="text-xl font-bold bg-gradient-to-r from-slate-50 to-slate-300 bg-clip-text text-transparent">YuSystem</span>
                     </div>
-                ))}
-            </nav>
+                    {/* Mobile Close Button */}
+                    <button
+                        onClick={closeMobileMenu}
+                        className="lg:hidden p-2 hover:bg-slate-800 rounded-lg transition-colors"
+                    >
+                        <X className="w-5 h-5 text-slate-400" />
+                    </button>
+                </div>
 
-            {/* Utility Area */}
-            <div className="border-t border-slate-700/50 p-3 space-y-1.5 bg-gradient-to-t from-slate-800/30 to-transparent">
-                <button className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800/50 hover:text-white transition-all duration-200 hover:scale-[1.01]">
-                    <HelpCircle className="w-5 h-5 text-slate-400" />
-                    <span>ヘルプ</span>
-                </button>
-                <button
-                    onClick={handleLogout}
-                    className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-red-300 hover:bg-red-900/20 hover:text-red-200 transition-all duration-200 hover:scale-[1.01]"
-                >
-                    <LogOut className="w-5 h-5 text-red-400" />
-                    <span>ログアウト</span>
-                </button>
-            </div>
-        </aside>
+                {/* User Info */}
+                {session?.user && (
+                    <div className="px-3 py-4 border-b border-slate-700/50">
+                        <div className="flex items-center gap-3 px-3 py-2 bg-slate-800/50 rounded-xl">
+                            <div className="w-10 h-10 bg-gradient-to-br from-slate-600 to-slate-700 rounded-full flex items-center justify-center ring-2 ring-slate-600/30">
+                                <UserIcon className="w-5 h-5 text-slate-200" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-slate-200 truncate">
+                                    {session.user.name || session.user.username}
+                                </p>
+                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ring-1 ${getRoleBadgeColor(session.user.role)}`}>
+                                    {getRoleLabel(session.user.role)}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Navigation Menu */}
+                <nav className="flex-1 overflow-y-auto py-6 px-3">
+                    {navigationSections.map((section, sectionIndex) => (
+                        <div key={section.title} className={sectionIndex > 0 ? 'mt-8' : ''}>
+                            <h3 className="px-3 mb-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                                {section.title}
+                            </h3>
+                            <ul className="space-y-1.5">
+                                {section.items.map((item) => {
+                                    const Icon = item.icon;
+                                    const isActive = activePage === item.page;
+
+                                    return (
+                                        <li key={item.name}>
+                                            <button
+                                                onClick={() => handleNavigation(item.page)}
+                                                className={`
+                                                    w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200
+                                                    ${isActive
+                                                        ? 'bg-gradient-to-r from-slate-700 to-slate-600 text-white shadow-lg shadow-slate-900/50 scale-[1.02] ring-1 ring-slate-500/50'
+                                                        : 'text-slate-300 hover:bg-slate-800/50 hover:text-white hover:scale-[1.01]'
+                                                    }
+                                                `}
+                                            >
+                                                <Icon className={`w-5 h-5 ${isActive ? 'text-slate-100' : 'text-slate-400'}`} />
+                                                <span className="flex-1 text-left">{item.name}</span>
+                                                {isActive && <ChevronRight className="w-4 h-4 text-slate-300" />}
+                                            </button>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        </div>
+                    ))}
+                </nav>
+
+                {/* Utility Area */}
+                <div className="border-t border-slate-700/50 p-3 space-y-1.5 bg-gradient-to-t from-slate-800/30 to-transparent">
+                    <button className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800/50 hover:text-white transition-all duration-200 hover:scale-[1.01]">
+                        <HelpCircle className="w-5 h-5 text-slate-400" />
+                        <span>ヘルプ</span>
+                    </button>
+                    <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-red-300 hover:bg-red-900/20 hover:text-red-200 transition-all duration-200 hover:scale-[1.01]"
+                    >
+                        <LogOut className="w-5 h-5 text-red-400" />
+                        <span>ログアウト</span>
+                    </button>
+                </div>
+            </aside>
+        </>
     );
 }
