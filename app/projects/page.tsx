@@ -174,7 +174,7 @@ export default function ProjectListPage() {
                                         {formatDate(project.startDate, 'full')}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                                        {getEmployeeName(project.assignedEmployeeId)}
+                                        {getEmployeeName(project.assignedEmployeeId ?? '')}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                                         {project.workers?.length || 0}人
