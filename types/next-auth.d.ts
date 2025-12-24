@@ -8,6 +8,7 @@ declare module 'next-auth' {
             username: string;
             role: UserRole;
             assignedProjects?: string[];
+            isActive: boolean;
         } & DefaultSession['user'];
     }
 
@@ -28,5 +29,6 @@ declare module 'next-auth/jwt' {
         username: string;
         role: UserRole;
         assignedProjects?: string[];
+        isActive: boolean;
     }
 }

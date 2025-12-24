@@ -76,6 +76,7 @@ export const authOptions: NextAuthOptions = {
                 token.username = user.username;
                 token.role = user.role;
                 token.assignedProjects = user.assignedProjects;
+                token.isActive = user.isActive;
             }
             return token;
         },
@@ -85,6 +86,7 @@ export const authOptions: NextAuthOptions = {
                 session.user.username = token.username;
                 session.user.role = token.role;
                 session.user.assignedProjects = token.assignedProjects;
+                session.user.isActive = token.isActive;
             }
             return session;
         },
