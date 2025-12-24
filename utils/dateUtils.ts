@@ -21,6 +21,7 @@ export function getWeekDays(date: Date): WeekDay[] {
             isToday: isToday(day),
             isWeekend: dayOfWeek === 0 || dayOfWeek === 6,
             isHoliday: false, // TODO: 祝日判定の実装
+            events: [], // 初期状態では空の配列
         });
     }
 

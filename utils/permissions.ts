@@ -49,7 +49,7 @@ export function hasPermission(
     const rolePermissions = ROLE_PERMISSIONS[user.role as keyof typeof ROLE_PERMISSIONS];
     if (!rolePermissions) return false;
 
-    const resourcePermissions = rolePermissions[resource as keyof typeof rolePermissions];
+    const resourcePermissions = rolePermissions[resource as keyof typeof rolePermissions] as readonly string[] | undefined;
     if (!resourcePermissions) return false;
 
     return resourcePermissions.includes(action);
