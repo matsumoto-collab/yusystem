@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
             return NextResponse.json({ error: '認証が必要です' }, { status: 401 });
         }
 
-        if (!canManageUsers(session.user)) {
+        if (!canManageUsers(session.user as any)) {
             return NextResponse.json({ error: '権限がありません' }, { status: 403 });
         }
 
@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
         });
 
         // Parse assignedProjects JSON
-        const parsedUsers = users.map(user => ({
+        const parsedUsers = users.map((user: any) => ({
             ...user,
             role: user.role.toLowerCase(),
             assignedProjects: user.assignedProjects
@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: '認証が必要です' }, { status: 401 });
         }
 
-        if (!canManageUsers(session.user)) {
+        if (!canManageUsers(session.user as any)) {
             return NextResponse.json({ error: '権限がありません' }, { status: 403 });
         }
 
