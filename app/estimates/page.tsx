@@ -46,7 +46,7 @@ export default function EstimateListPage() {
         .filter(est => {
             const matchesSearch = est.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 est.estimateNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                getProjectName(est.projectId).toLowerCase().includes(searchTerm.toLowerCase());
+                getProjectName(est.projectId ?? '').toLowerCase().includes(searchTerm.toLowerCase());
             const matchesStatus = statusFilter === 'all' || est.status === statusFilter;
             return matchesSearch && matchesStatus;
         })
@@ -222,7 +222,7 @@ export default function EstimateListPage() {
                                                 }}
                                                 className="text-sm text-gray-700 hover:text-blue-600 hover:underline transition-colors"
                                             >
-                                                {getProjectName(estimate.projectId)}
+                                                {getProjectName(estimate.projectId ?? '')}
                                             </button>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
