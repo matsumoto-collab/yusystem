@@ -68,7 +68,7 @@ export default function EstimateForm({ initialData, onSubmit, onCancel }: Estima
     const [status, setStatus] = useState<EstimateInput['status']>(initialData?.status || 'draft');
     const [notes, setNotes] = useState(initialData?.notes || '');
     const [items, setItems] = useState<EstimateItem[]>(initialData?.items || [
-        { id: `item-${Date.now()}`, description: '', quantity: 1, unit: '', unitPrice: 0, amount: 0, taxType: 'standard' }
+        { id: `item-${Date.now()}`, description: '', specification: '', quantity: 1, unit: '', unitPrice: 0, amount: 0, taxType: 'standard', notes: '' }
     ]);
 
     // 案件選択時に情報を自動入力
@@ -155,11 +155,13 @@ export default function EstimateForm({ initialData, onSubmit, onCancel }: Estima
         setItems([...items, {
             id: `item-${Date.now()}`,
             description: '',
+            specification: '',
             quantity: 1,
             unit: '',
             unitPrice: 0,
             amount: 0,
-            taxType: 'standard'
+            taxType: 'standard',
+            notes: '',
         }]);
     };
 
@@ -168,11 +170,13 @@ export default function EstimateForm({ initialData, onSubmit, onCancel }: Estima
         const newItems = selectedMasters.map(master => ({
             id: `item-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             description: master.description,
+            specification: '',
             quantity: 1,
             unit: master.unit,
             unitPrice: master.unitPrice,
             amount: master.unitPrice,
             taxType: 'standard' as const,
+            notes: '',
         }));
 
         // 既存の行から空の行（未入力の行）を除外
@@ -419,11 +423,13 @@ export default function EstimateForm({ initialData, onSubmit, onCancel }: Estima
                         <thead className="bg-gray-50">
                             <tr>
                                 <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 border-b border-gray-300">品目・内容</th>
+                                <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 border-b border-gray-300 w-32">規格</th>
                                 <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 border-b border-gray-300 w-20">数量</th>
                                 <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 border-b border-gray-300 w-24">単位</th>
                                 <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 border-b border-gray-300 w-32">単価</th>
                                 <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 border-b border-gray-300 w-32">金額</th>
                                 <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 border-b border-gray-300 w-28">税区分</th>
+                                <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 border-b border-gray-300 w-32">備考</th>
                                 <th className="px-3 py-2 text-center text-xs font-semibold text-gray-700 border-b border-gray-300 w-12"></th>
                             </tr>
                         </thead>
@@ -437,6 +443,15 @@ export default function EstimateForm({ initialData, onSubmit, onCancel }: Estima
                                             onChange={(e) => updateItem(item.id, 'description', e.target.value)}
                                             className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                                             placeholder="品目・内容"
+                                        />
+                                    </td>
+                                    <td className="px-3 py-2">
+                                        <input
+                                            type="text"
+                                            value={item.specification || ''}
+                                            onChange={(e) => updateItem(item.id, 'specification', e.target.value)}
+                                            className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                            placeholder="規格"
                                         />
                                     </td>
                                     <td className="px-3 py-2">
@@ -481,6 +496,15 @@ export default function EstimateForm({ initialData, onSubmit, onCancel }: Estima
                                             <option value="standard">10%</option>
                                             <option value="none">なし</option>
                                         </select>
+                                    </td>
+                                    <td className="px-3 py-2">
+                                        <input
+                                            type="text"
+                                            value={item.notes || ''}
+                                            onChange={(e) => updateItem(item.id, 'notes', e.target.value)}
+                                            className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                            placeholder="備考"
+                                        />
                                     </td>
                                     <td className="px-3 py-2 text-center">
                                         <button

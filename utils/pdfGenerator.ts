@@ -3,17 +3,10 @@ import autoTable from 'jspdf-autotable';
 import { Estimate } from '@/types/estimate';
 import { Project } from '@/types/calendar';
 import { CompanyInfo } from '@/types/company';
+import { NotoSansJPFont } from './fonts/NotoSansJP-font';
 
 /**
- * テキストをASCII安全な文字列に変換
- */
-function sanitizeText(text: string): string {
-    // 基本的なASCII文字のみを許可
-    return text.replace(/[^\x20-\x7E]/g, '?');
-}
-
-/**
- * 見積書PDF（表紙+内訳）を生成して出力
+ * 見積書PDF（日本語フォーマット）を生成して出力
  */
 export function exportEstimatePDF(
     estimate: Estimate,
@@ -26,50 +19,30 @@ export function exportEstimatePDF(
             orientation: 'portrait',
             unit: 'mm',
             format: 'a4',
-            compress: true,
-            precision: 2,
-            userUnit: 1.0,
         });
+
+        // 日本語フォントを追加
+        doc.addFileToVFS('NotoSansJP-Regular.ttf', NotoSansJPFont);
+        doc.addFont('NotoSansJP-Regular.ttf', 'NotoSansJP', 'normal');
+        doc.setFont('NotoSansJP');
 
         // PDFメタデータを設定
         doc.setProperties({
-            title: `Estimate ${estimate.estimateNumber}`,
-            subject: `Estimate for ${project.title}`,
+            title: `見積書 ${estimate.estimateNumber}`,
+            subject: `${project.title}の見積書`,
             author: companyInfo.name,
-            keywords: 'estimate, quotation',
-            creator: 'YuSystem Estimate Manager'
+            keywords: '見積書, estimate',
+            creator: 'YuSystem'
         });
 
-        const pageWidth = 210;
-        const pageHeight = 297;
-        const margin = 20;
+        // 見積書を生成
+        generateEstimatePage(doc, estimate, project, companyInfo);
 
-        // ========== 1ページ目: 見積書表紙 ==========
-        generateCoverPage(doc, estimate, project, companyInfo, pageWidth, pageHeight, margin);
+        // PDFをダウンロード
+        const fileName = `見積書_${estimate.estimateNumber}_${new Date().getTime()}.pdf`;
+        doc.save(fileName);
 
-        // ========== 2ページ目: 内訳書 ==========
-        doc.addPage();
-        generateBreakdownPage(doc, estimate, pageWidth, margin);
-
-        // PDFをBlobとして出力し、ダウンロード
-        const pdfBlob = doc.output('blob');
-
-        // ファイル名を生成（ASCII文字のみ）
-        const safeEstimateNumber = estimate.estimateNumber.replace(/[^a-zA-Z0-9-]/g, '_');
-        const safeProjectTitle = project.title.replace(/[^a-zA-Z0-9-]/g, '_');
-        const fileName = `Estimate_${safeEstimateNumber}_${safeProjectTitle}.pdf`;
-
-        // Blobからダウンロードリンクを作成
-        const url = URL.createObjectURL(pdfBlob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = fileName;
-        link.click();
-
-        // メモリ解放
-        setTimeout(() => URL.revokeObjectURL(url), 100);
-
-        console.log('PDF生成成功:', fileName, 'サイズ:', Math.round(pdfBlob.size / 1024), 'KB');
+        console.log('PDF生成成功:', fileName);
     } catch (error) {
         console.error('PDF生成エラー:', error);
         alert('PDFの生成に失敗しました。エラー: ' + (error as Error).message);
@@ -83,289 +56,279 @@ export function generateEstimatePDFBlob(
     estimate: Estimate,
     project: Project,
     companyInfo: CompanyInfo
-): string {
-    try {
-        // PDFドキュメントを作成
-        const doc = new jsPDF({
-            orientation: 'portrait',
-            unit: 'mm',
-            format: 'a4',
-            compress: true,
-            precision: 2,
-            userUnit: 1.0,
-        });
+): Promise<string> {
+    return new Promise((resolve, reject) => {
+        try {
+            const doc = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'a4',
+            });
 
-        // PDFメタデータを設定
-        doc.setProperties({
-            title: `Estimate ${estimate.estimateNumber}`,
-            subject: `Estimate for ${project.title}`,
-            author: companyInfo.name,
-            keywords: 'estimate, quotation',
-            creator: 'YuSystem Estimate Manager'
-        });
+            // 日本語フォントを追加
+            doc.addFileToVFS('NotoSansJP-Regular.ttf', NotoSansJPFont);
+            doc.addFont('NotoSansJP-Regular.ttf', 'NotoSansJP', 'normal');
+            doc.setFont('NotoSansJP');
 
-        const pageWidth = 210;
-        const pageHeight = 297;
-        const margin = 20;
+            doc.setProperties({
+                title: `見積書 ${estimate.estimateNumber}`,
+                subject: `${project.title}の見積書`,
+                author: companyInfo.name,
+            });
 
-        // ========== 1ページ目: 見積書表紙 ==========
-        generateCoverPage(doc, estimate, project, companyInfo, pageWidth, pageHeight, margin);
+            generateEstimatePage(doc, estimate, project, companyInfo);
 
-        // ========== 2ページ目: 内訳書 ==========
-        doc.addPage();
-        generateBreakdownPage(doc, estimate, pageWidth, margin);
-
-        // PDFをBlobとして出力
-        const pdfBlob = doc.output('blob');
-
-        // Blob URLを作成して返す
-        return URL.createObjectURL(pdfBlob);
-    } catch (error) {
-        console.error('PDF生成エラー:', error);
-        throw error;
-    }
+            const pdfBlob = doc.output('blob');
+            const url = URL.createObjectURL(pdfBlob);
+            resolve(url);
+        } catch (error) {
+            console.error('PDF生成エラー:', error);
+            reject(error);
+        }
+    });
 }
 
 /**
- * 見積書表紙ページを生成
+ * 見積書ページを生成（日本語フォーマット）
  */
-function generateCoverPage(
+function generateEstimatePage(
     doc: jsPDF,
     estimate: Estimate,
     project: Project,
-    companyInfo: CompanyInfo,
-    pageWidth: number,
-    pageHeight: number,
-    margin: number
+    companyInfo: CompanyInfo
 ): void {
-    // 外枠
-    doc.setLineWidth(0.5);
-    doc.rect(margin, margin, pageWidth - margin * 2, pageHeight - margin * 2);
+    const pageWidth = 210;
+    const pageHeight = 297;
+    const margin = 15;
 
-    let y = margin + 10;
+    let y = margin;
 
     // ========== ヘッダー部分 ==========
-    // 左上: 現場名
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    const siteText = `Site: ${project.title || 'N/A'}`;
-    doc.text(siteText, margin + 5, y);
+    // 左上: 会社住所
+    doc.setFontSize(9);
+    y += 5;
+    doc.text(`〒${companyInfo.postalCode}`, margin, y);
+    y += 4;
 
-    // 中央: 御見積書
+    // 住所を複数行に分割
+    const addressLines = doc.splitTextToSize(companyInfo.address, 90);
+    addressLines.forEach((line: string) => {
+        doc.text(line, margin, y);
+        y += 4;
+    });
+    y += 4;
+
+    // 宛先
+    doc.setFontSize(11);
+    doc.setFont('NotoSansJP', 'normal');
+    const customerName = project.customer || '御中';
+    doc.text(`${customerName} 御中`, margin, y);
+    y += 6;
+    doc.setFontSize(9);
+    doc.text('ご担当：様', margin + 5, y);
+
+    // 右上: タイトルと日付
     doc.setFontSize(18);
-    doc.setFont('helvetica', 'bold');
-    const title = 'ESTIMATE';
+    doc.setFont('NotoSansJP', 'normal');
+    const title = '御見積書';
     const titleWidth = doc.getTextWidth(title);
-    doc.text(title, (pageWidth - titleWidth) / 2, y);
+    doc.text(title, pageWidth - margin - titleWidth, margin + 10);
 
-    // 右上: 日付
     doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
     const date = new Date(estimate.createdAt);
-    const dateStr = `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
-    doc.text(dateStr, pageWidth - margin - 5, y, { align: 'right' });
-
-    y += 30;
-
-    // ========== 宛先 ==========
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    const customerName = project.customer || 'Customer';
-    doc.text(customerName, pageWidth / 2, y, { align: 'center' });
+    const dateStr = `発行日： ${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+    const dateWidth = doc.getTextWidth(dateStr);
+    doc.text(dateStr, pageWidth - margin - dateWidth, margin + 18);
 
     y += 10;
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.text('We are pleased to submit our estimate as follows:', pageWidth / 2, y, { align: 'center' });
 
-    y += 20;
-
-    // ========== 御見積金額ボックス ==========
-    const boxX = margin + 30;
-    const boxWidth = pageWidth - margin * 2 - 60;
-    const boxHeight = 50;
-
-    doc.setLineWidth(0.8);
-    doc.rect(boxX, y, boxWidth, boxHeight);
-
-    // 御見積金額
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Total Amount', boxX + 10, y + 10);
-
-    doc.setFontSize(20);
-    const totalStr = `JPY ${estimate.total.toLocaleString()}`;
-    doc.text(totalStr, boxX + boxWidth - 10, y + 15, { align: 'right' });
-
-    // 内訳
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    const subtotalStr = `JPY ${estimate.subtotal.toLocaleString()}`;
-    const taxStr = `JPY ${estimate.tax.toLocaleString()}`;
-
-    doc.text('Subtotal', boxX + 20, y + 30);
-    doc.text(subtotalStr, boxX + boxWidth - 10, y + 30, { align: 'right' });
-
-    doc.text('Tax (10%)', boxX + 20, y + 38);
-    doc.text(taxStr, boxX + boxWidth - 10, y + 38, { align: 'right' });
-
-    doc.text('Adjustment', boxX + 20, y + 46);
-    doc.text('-', boxX + boxWidth - 10, y + 46, { align: 'right' });
-
-    y += boxHeight + 15;
-
-    // ========== 案件情報 ==========
-    doc.setFontSize(10);
-    const infoX = margin + 10;
-
-    doc.text(`Project: ${project.title}`, infoX, y);
-    y += 6;
-
-    doc.text(`Location: ${project.location || 'N/A'}`, infoX, y);
-    y += 6;
-
-    const startDate = project.startDate ? new Date(project.startDate) : new Date();
-    const endDate = project.endDate ? new Date(project.endDate) : new Date();
-    const duration = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 30));
-    doc.text(`Duration: ${duration} month(s)`, infoX, y);
-    y += 6;
-
-    doc.text('Payment Terms: To be discussed', infoX, y);
-    y += 6;
-
-    const validDate = new Date(estimate.validUntil);
-    const validMonths = Math.ceil((validDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24 * 30));
-    doc.text(`Valid Until: ${validMonths} month(s)`, infoX, y);
-
-    // ========== フッター: 会社情報 ==========
-    const footerY = pageHeight - margin - 30;
-    const footerX = pageWidth - margin - 60;
+    // ========== 案件情報テーブル（左側） ==========
+    const infoTableX = margin;
+    const infoTableWidth = 95;
+    y += 5;
 
     doc.setFontSize(9);
-    doc.text(companyInfo.name, footerX, footerY, { align: 'right' });
-    doc.text(`Representative: ${companyInfo.representative}`, footerX, footerY + 5, { align: 'right' });
-    doc.text(companyInfo.postalCode, footerX, footerY + 10, { align: 'right' });
-    doc.text(companyInfo.address, footerX, footerY + 15, { align: 'right' });
-    doc.text(`${companyInfo.tel}  ${companyInfo.fax || ''}`, footerX, footerY + 20, { align: 'right' });
-}
+    doc.text('下記の通り御見積申し上げます。', margin, y);
+    y += 5;
 
-/**
- * 内訳書ページを生成
- */
-function generateBreakdownPage(
-    doc: jsPDF,
-    estimate: Estimate,
-    pageWidth: number,
-    margin: number
-): void {
-    // タイトル
-    doc.setFontSize(16);
-    doc.setFont('helvetica', 'bold');
-    doc.text('BREAKDOWN', pageWidth / 2, margin, { align: 'center' });
+    // 案件情報テーブル
+    autoTable(doc, {
+        startY: y,
+        margin: { left: infoTableX },
+        head: [],
+        body: [
+            ['件名', project.title || ''],
+            ['現場住所', project.location || ''],
+            ['有効期限', `発行日より${Math.ceil((new Date(estimate.validUntil).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24 * 30))}ヶ月`],
+            ['工期', `${Math.ceil((new Date(project.endDate || new Date()).getTime() - new Date(project.startDate).getTime()) / (1000 * 60 * 60 * 24 * 30))}ヶ月`],
+            ['支払条件', '従来通り'],
+        ],
+        theme: 'grid',
+        styles: {
+            font: 'NotoSansJP',
+            fontSize: 9,
+            cellPadding: 2,
+        },
+        columnStyles: {
+            0: { cellWidth: 25, fillColor: [245, 245, 245] },
+            1: { cellWidth: 70 },
+        },
+        tableWidth: infoTableWidth,
+    });
 
-    // テーブルデータの準備
+    const infoTableEndY = (doc as any).lastAutoTable.finalY;
+
+    // ========== 会社情報ボックス（右側） ==========
+    const companyBoxX = pageWidth - margin - 85;
+    const companyBoxY = y;
+    const companyBoxWidth = 85;
+    const companyBoxHeight = 70;
+
+    // 外枠
+    doc.setLineWidth(0.5);
+    doc.rect(companyBoxX, companyBoxY, companyBoxWidth, companyBoxHeight);
+
+    let companyY = companyBoxY + 8;
+
+    // 会社名
+    doc.setFontSize(11);
+    doc.text(companyInfo.name, companyBoxX + 5, companyY);
+    companyY += 6;
+
+    // 住所
+    doc.setFontSize(8);
+    doc.text(`〒${companyInfo.postalCode}`, companyBoxX + 5, companyY);
+    companyY += 4;
+
+    // 住所を複数行に分割
+    const companyAddressLines = doc.splitTextToSize(companyInfo.address, 75);
+    companyAddressLines.forEach((line: string) => {
+        doc.text(line, companyBoxX + 5, companyY);
+        companyY += 3.5;
+    });
+    companyY += 1;
+
+    // 連絡先
+    doc.text(`TEL：${companyInfo.tel}`, companyBoxX + 5, companyY);
+    companyY += 4;
+    if (companyInfo.fax) {
+        doc.text(`FAX：${companyInfo.fax}`, companyBoxX + 5, companyY);
+        companyY += 4;
+    }
+    if (companyInfo.email) {
+        doc.text(companyInfo.email, companyBoxX + 5, companyY);
+        companyY += 5;
+    }
+
+    // 担当者
+    doc.text(`担当者：${companyInfo.representative}`, companyBoxX + 5, companyY);
+
+    // 備考欄（印鑑用）
+    const stampBoxY = companyBoxY + companyBoxHeight - 20;
+    doc.setFontSize(8);
+    doc.text('備考', companyBoxX + 5, stampBoxY);
+    doc.rect(companyBoxX + 20, stampBoxY - 3, 60, 15);
+
+    // ========== 合計金額セクション ==========
+    y = Math.max(infoTableEndY, companyBoxY + companyBoxHeight) + 10;
+
+    const totalBoxX = margin + 20;
+    const totalBoxWidth = pageWidth - margin * 2 - 40;
+
+    doc.setFontSize(12);
+    doc.text('合計金額', totalBoxX, y);
+
+    doc.setFontSize(18);
+    const totalStr = `¥${estimate.total.toLocaleString()}`;
+    const totalWidth = doc.getTextWidth(totalStr);
+    doc.text(totalStr, totalBoxX + totalBoxWidth - totalWidth, y);
+    doc.setFontSize(12);
+    doc.text('(税込)', totalBoxX + totalBoxWidth + 2, y);
+
+    y += 2;
+    doc.setLineWidth(0.3);
+    doc.line(totalBoxX, y, totalBoxX + totalBoxWidth, y);
+    y += 5;
+
+    // 小計・消費税
+    doc.setFontSize(10);
+    doc.text('小計', totalBoxX + 20, y);
+    doc.text(`¥${estimate.subtotal.toLocaleString()}`, totalBoxX + totalBoxWidth - doc.getTextWidth(`¥${estimate.subtotal.toLocaleString()}`), y);
+    y += 5;
+
+    doc.text('消費税(10%)', totalBoxX + 20, y);
+    doc.text(`¥${estimate.tax.toLocaleString()}`, totalBoxX + totalBoxWidth - doc.getTextWidth(`¥${estimate.tax.toLocaleString()}`), y);
+
+    y += 10;
+
+    // ========== 明細テーブル ==========
     const tableData: any[] = [];
 
-    // 明細行を追加
     estimate.items.forEach((item, index) => {
         tableData.push([
             (index + 1).toString(),
             item.description || '',
+            item.specification || '',
             item.quantity.toString(),
-            'm2', // 単位は固定（必要に応じて変更可能）
+            item.unit || '式',
             item.unitPrice > 0 ? item.unitPrice.toLocaleString() : '',
             item.amount.toLocaleString(),
-            '', // 備考
+            item.notes || '',
         ]);
     });
 
-    // 空行を追加（最大15行まで）
-    const maxRows = 15;
+    // 空行を追加
+    const maxRows = 10;
     for (let i = estimate.items.length; i < maxRows; i++) {
-        tableData.push([
-            (i + 1).toString(),
-            '',
-            '',
-            '',
-            '',
-            '0',
-            '',
-        ]);
+        tableData.push(['', '', '', '', '', '', '', '']);
     }
 
-    // テーブル生成
+    // 小計行
+    tableData.push(['', '', '', '', '', '小計', estimate.subtotal.toLocaleString(), '']);
+
     autoTable(doc, {
-        startY: margin + 10,
-        head: [['No.', 'Description', 'Qty', 'Unit', 'Unit Price', 'Amount', 'Notes']],
+        startY: y,
+        head: [['No', '名称', '規格', '数量', '単位', '単価', '金額', '備考']],
         body: tableData,
         theme: 'grid',
         styles: {
-            font: 'helvetica',
-            fontSize: 9,
-            cellPadding: 2,
+            font: 'NotoSansJP',
+            fontSize: 8,
+            cellPadding: 1.5,
             lineColor: [0, 0, 0],
             lineWidth: 0.1,
         },
         headStyles: {
             fillColor: [240, 240, 240],
             textColor: [0, 0, 0],
-            fontStyle: 'bold',
             halign: 'center',
         },
         columnStyles: {
-            0: { cellWidth: 12, halign: 'center' },
-            1: { cellWidth: 65 },
-            2: { cellWidth: 18, halign: 'right' },
-            3: { cellWidth: 15, halign: 'center' },
-            4: { cellWidth: 25, halign: 'right' },
-            5: { cellWidth: 28, halign: 'right' },
-            6: { cellWidth: 27 },
+            0: { cellWidth: 10, halign: 'center' },
+            1: { cellWidth: 45 },
+            2: { cellWidth: 35 },
+            3: { cellWidth: 12, halign: 'right' },
+            4: { cellWidth: 12, halign: 'center' },
+            5: { cellWidth: 20, halign: 'right' },
+            6: { cellWidth: 22, halign: 'right' },
+            7: { cellWidth: 24 },
         },
-        didDrawPage: (data) => {
-            // ページ番号を追加
-            doc.setFontSize(8);
-            doc.text(
-                `Page ${doc.getCurrentPageInfo().pageNumber}`,
-                pageWidth / 2,
-                285,
-                { align: 'center' }
-            );
-        },
-    });
-
-    // 合計行
-    const finalY = (doc as any).lastAutoTable.finalY + 5;
-
-    // 合計テーブル
-    autoTable(doc, {
-        startY: finalY,
-        body: [
-            ['', '', '', '', 'Subtotal', estimate.subtotal.toLocaleString()],
-            ['', '', '', '', 'Tax (10%)', estimate.tax.toLocaleString()],
-            ['', '', '', '', 'Total', estimate.total.toLocaleString()],
-        ],
-        theme: 'plain',
-        styles: {
-            fontSize: 10,
-            cellPadding: 2,
-            font: 'helvetica',
-        },
-        columnStyles: {
-            0: { cellWidth: 12 },
-            1: { cellWidth: 65 },
-            2: { cellWidth: 18 },
-            3: { cellWidth: 15 },
-            4: { cellWidth: 25, fontStyle: 'bold', halign: 'right' },
-            5: { cellWidth: 28, halign: 'right', fontStyle: 'bold' },
+        didParseCell: (data) => {
+            // 小計行を太字に
+            if (data.row.index === tableData.length - 1) {
+                data.cell.styles.fontStyle = 'bold';
+            }
         },
     });
 
     // 備考
     if (estimate.notes) {
-        const notesY = (doc as any).lastAutoTable.finalY + 10;
+        const notesY = (doc as any).lastAutoTable.finalY + 5;
         doc.setFontSize(9);
-        doc.setFont('helvetica', 'normal');
-        doc.text('Notes:', margin, notesY);
-        doc.text(estimate.notes, margin, notesY + 5);
+        doc.text('備考：', margin, notesY);
+        const notesLines = doc.splitTextToSize(estimate.notes, pageWidth - margin * 2);
+        notesLines.forEach((line: string, index: number) => {
+            doc.text(line, margin, notesY + 5 + (index * 4));
+        });
     }
 }

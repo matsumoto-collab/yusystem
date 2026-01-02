@@ -5,6 +5,7 @@ export interface CompanyInfo {
     address: string;
     tel: string;
     fax?: string;
+    email?: string;
     representative: string;
     sealImage?: string; // Base64 encoded image or URL
     createdAt: Date;
@@ -17,6 +18,7 @@ export interface CompanyInfoInput {
     address: string;
     tel: string;
     fax?: string;
+    email?: string;
     representative: string;
     sealImage?: string;
 }

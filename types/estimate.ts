@@ -2,11 +2,13 @@
 export interface EstimateItem {
     id: string;
     description: string;  // 品目・内容
+    specification?: string; // 規格
     quantity: number;     // 数量
     unit?: string;        // 単位
     unitPrice: number;    // 単価
     amount: number;       // 金額
     taxType: 'none' | 'standard'; // 税区分（なし、10%）
+    notes?: string;       // 備考
 }
 
 // 見積書

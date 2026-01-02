@@ -31,19 +31,23 @@ export default function EstimateDetailModal({
 
     useEffect(() => {
         if (isOpen && estimate && project && companyInfo) {
-            try {
-                const url = generateEstimatePDFBlob(estimate, project, companyInfo);
-                setPdfUrl(url);
+            const generatePDF = async () => {
+                try {
+                    const url = await generateEstimatePDFBlob(estimate, project, companyInfo);
+                    setPdfUrl(url);
+                } catch (error) {
+                    console.error('PDF生成エラー:', error);
+                }
+            };
 
-                // クリーンアップ
-                return () => {
-                    if (url) {
-                        URL.revokeObjectURL(url);
-                    }
-                };
-            } catch (error) {
-                console.error('PDF生成エラー:', error);
-            }
+            generatePDF();
+
+            // クリーンアップ
+            return () => {
+                if (pdfUrl) {
+                    URL.revokeObjectURL(pdfUrl);
+                }
+            };
         }
     }, [isOpen, estimate, project, companyInfo]);
 
