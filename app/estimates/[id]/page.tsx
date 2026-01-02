@@ -88,7 +88,7 @@ export default function EstimateDetailPage() {
     }
 
     return (
-        <div className="flex flex-col h-screen bg-gray-50">
+        <div className="flex flex-col h-screen bg-gray-50 pt-16 lg:pt-0 lg:ml-64">
             {/* ヘッダー */}
             <div className="bg-white border-b border-gray-200 px-6 py-4">
                 <div className="flex items-center justify-between">

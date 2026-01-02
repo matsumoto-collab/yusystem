@@ -83,9 +83,9 @@ export default function MainContent() {
             left-0 right-0 pt-16
             
             /* Desktop: Offset by sidebar width, no top padding */
-            lg:left-64 lg:pt-0
+            lg:left-64 lg:pt-0 lg:right-0
         ">
-            <div className={`${activePage === 'schedule' ? 'p-4 sm:p-6 h-full flex flex-col' : 'p-4 sm:p-6'}`}>
+            <div className={`${activePage === 'schedule' ? 'p-4 sm:p-6 h-full flex flex-col' : 'p-4 sm:p-6'} w-full min-w-0`}>
                 {renderContent()}
             </div>
         </main>

@@ -85,7 +85,7 @@ export default function EstimateListPage() {
     };
 
     return (
-        <div className="p-6 h-full flex flex-col bg-gradient-to-br from-gray-50 to-white">
+        <div className="p-4 sm:p-6 h-full flex flex-col bg-gradient-to-br from-gray-50 to-white w-full max-w-[1800px] mx-auto">
             {/* ヘッダー */}
             <div className="mb-6">
                 <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-2">

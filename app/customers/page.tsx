@@ -54,7 +54,7 @@ export default function CustomersPage() {
     };
 
     return (
-        <div className="p-6 space-y-6">
+        <div className="p-4 sm:p-6 space-y-6">
             {/* ヘッダー */}
             <div className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-700 to-slate-900 bg-clip-text text-transparent">
