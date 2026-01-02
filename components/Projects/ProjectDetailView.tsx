@@ -173,7 +173,7 @@ export default function ProjectDetailView({ project, onEdit, onClose, onDelete }
 
             {/* 削除確認ダイアログ */}
             {showDeleteConfirm && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center">
+                <div className="fixed inset-0 lg:left-64 z-[60] flex items-center justify-center">
                     <div className="absolute inset-0 bg-black bg-opacity-50" onClick={cancelDelete} />
                     <div className="relative bg-white rounded-lg shadow-xl p-6 max-w-sm mx-4">
                         <h3 className="text-lg font-semibold text-gray-900 mb-2">

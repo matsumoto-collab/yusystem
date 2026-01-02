@@ -58,7 +58,7 @@ export default function UnitPriceMasterModal({ isOpen, onClose, onSelect }: Unit
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 lg:left-64 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
             <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
                 {/* ヘッダー */}
                 <div className="p-6 border-b border-gray-200">
@@ -84,8 +84,8 @@ export default function UnitPriceMasterModal({ isOpen, onClose, onSelect }: Unit
                                     setSelectedItems(new Set());
                                 }}
                                 className={`px-4 py-2 rounded-t-lg font-medium whitespace-nowrap transition-colors ${selectedTemplate === key
-                                        ? 'bg-slate-700 text-white'
-                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    ? 'bg-slate-700 text-white'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                     }`}
                             >
                                 {label}
@@ -123,8 +123,8 @@ export default function UnitPriceMasterModal({ isOpen, onClose, onSelect }: Unit
                                 <label
                                     key={item.id}
                                     className={`flex items-start gap-3 p-4 border rounded-lg cursor-pointer transition-colors ${selectedItems.has(item.id)
-                                            ? 'border-slate-500 bg-slate-50'
-                                            : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                                        ? 'border-slate-500 bg-slate-50'
+                                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                                         }`}
                                 >
                                     <input

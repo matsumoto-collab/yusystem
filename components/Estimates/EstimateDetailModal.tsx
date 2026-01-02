@@ -84,7 +84,7 @@ export default function EstimateDetailModal({
             />
 
             {/* モーダル */}
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="fixed inset-0 lg:left-64 z-[60] flex items-center justify-center p-4">
                 <div className="bg-white rounded-xl shadow-2xl w-full max-w-6xl h-[90vh] flex flex-col">
                     {/* ヘッダー */}
                     <div className="bg-white border-b border-gray-200 px-6 py-4 rounded-t-xl">
@@ -151,8 +151,8 @@ export default function EstimateDetailModal({
                             <button
                                 onClick={() => setActiveTab('estimate')}
                                 className={`py-3 px-2 border-b-2 transition-colors ${activeTab === 'estimate'
-                                        ? 'border-blue-500 text-blue-600 font-medium'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                                    ? 'border-blue-500 text-blue-600 font-medium'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700'
                                     }`}
                             >
                                 見積書
@@ -160,8 +160,8 @@ export default function EstimateDetailModal({
                             <button
                                 onClick={() => setActiveTab('budget')}
                                 className={`py-3 px-2 border-b-2 transition-colors ${activeTab === 'budget'
-                                        ? 'border-blue-500 text-blue-600 font-medium'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                                    ? 'border-blue-500 text-blue-600 font-medium'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700'
                                     }`}
                             >
                                 予算書

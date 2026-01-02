@@ -33,7 +33,7 @@ export default function VehicleModal({ isOpen, onClose }: VehicleModalProps) {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 lg:left-64 z-[60] flex items-center justify-center">
             {/* Backdrop */}
             <div
                 className="absolute inset-0 bg-black bg-opacity-50"
