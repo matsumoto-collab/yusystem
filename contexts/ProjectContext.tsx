@@ -86,7 +86,23 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
 
     // Update project
     const updateProject = useCallback(async (id: string, updates: Partial<Project>) => {
+        // Store the original project for potential rollback
+        const originalProject = projects.find(p => p.id === id);
+
         try {
+            // Optimistically update local state first for smooth UI
+            setProjects(prev => prev.map(p => {
+                if (p.id === id) {
+                    return {
+                        ...p,
+                        ...updates,
+                        updatedAt: new Date(),
+                    };
+                }
+                return p;
+            }));
+
+            // Send update to server
             const response = await fetch(`/api/projects/${id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
@@ -105,16 +121,25 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
                     createdAt: new Date(updatedProject.createdAt),
                     updatedAt: new Date(updatedProject.updatedAt),
                 };
+                // Update with server response to ensure consistency
                 setProjects(prev => prev.map(p => p.id === id ? parsedProject : p));
             } else {
                 const error = await response.json();
+                // Rollback on error
+                if (originalProject) {
+                    setProjects(prev => prev.map(p => p.id === id ? originalProject : p));
+                }
                 throw new Error(error.error || 'プロジェクトの更新に失敗しました');
             }
         } catch (error) {
             console.error('Failed to update project:', error);
+            // Rollback on error
+            if (originalProject) {
+                setProjects(prev => prev.map(p => p.id === id ? originalProject : p));
+            }
             throw error;
         }
-    }, []);
+    }, [projects]);
 
     // Batch update projects
     const updateProjects = useCallback(async (updates: Array<{ id: string; data: Partial<Project> }>) => {
