@@ -40,11 +40,11 @@ export default function RemarksRow({ weekDays }: RemarksRowProps) {
     };
 
     return (
-        <div className="flex border-b-2 border-slate-300 bg-gradient-to-r from-blue-50 to-indigo-50 shadow-sm sticky top-[89px] z-20 h-16">
+        <div className="flex border-b-2 border-slate-300 bg-gradient-to-r from-blue-50 to-indigo-50 shadow-sm sticky top-[73px] z-20 h-14">
             {/* 職長セル（固定） */}
             <div className="sticky left-0 z-30 bg-gradient-to-r from-blue-50 to-indigo-50 border-r-2 border-slate-300 shadow-md">
                 <div className="w-32 h-full flex items-center justify-center">
-                    <span className="text-sm font-bold text-indigo-900 tracking-wide">備考</span>
+                    <span className="text-xs font-bold text-indigo-900 tracking-wide">備考</span>
                 </div>
             </div>
 

@@ -274,7 +274,7 @@ export default function WeeklyCalendar() {
                         <div className="flex border-b-2 border-slate-300 bg-gradient-to-r from-slate-100 to-slate-50 sticky top-0 z-20 shadow-md">
                             {/* 職長カラム（固定） */}
                             <div className="sticky left-0 z-30 bg-gradient-to-r from-slate-100 to-slate-50 border-r-2 border-slate-300 shadow-md">
-                                <div className="w-32 h-12 flex items-center justify-center font-bold text-slate-700 text-sm tracking-wide">
+                                <div className="w-32 h-8 flex items-center justify-center font-bold text-slate-700 text-xs tracking-wide">
                                     職長
                                 </div>
                             </div>
@@ -282,29 +282,29 @@ export default function WeeklyCalendar() {
                             {/* 日付カラム */}
                             {weekDays.map((day, index) => {
                                 const dayOfWeekString = getDayOfWeekString(day.date, 'short');
-                                const dateString = formatDate(day.date, 'day');
+                                const dateString = formatDate(day.date, 'short'); // 月/日 形式 (例: "1/4")
                                 const isSaturday = day.dayOfWeek === 6;
                                 const isSunday = day.dayOfWeek === 0;
+                                // 日付と曜日を1行にまとめる (例: "1/4(土)")
+                                const combinedDate = `${dateString}(${dayOfWeekString})`;
 
                                 return (
                                     <div
                                         key={index}
                                         className={`
-                      flex-1 min-w-[140px] border-r border-slate-300
+                      flex-1 min-w-[140px] border-r border-slate-300 h-8 flex items-center justify-center
                       ${isSaturday ? 'bg-gradient-to-b from-blue-100 to-blue-50' : isSunday ? 'bg-gradient-to-b from-rose-100 to-rose-50' : 'bg-gradient-to-b from-slate-100 to-slate-50'}
+                      ${day.isToday ? 'bg-gradient-to-r from-slate-700 to-slate-600' : ''}
                     `}
                                     >
-                                        <div className="h-6 flex items-center justify-center text-xs font-bold text-slate-700">
-                                            {dateString}
-                                        </div>
                                         <div
                                             className={`
-                        h-6 flex items-center justify-center text-xs border-t border-slate-200
-                        ${isSaturday ? 'text-blue-700 font-bold' : isSunday ? 'text-rose-700 font-bold' : 'text-slate-700 font-semibold'}
-                        ${day.isToday ? 'bg-gradient-to-r from-slate-700 to-slate-600 text-white font-bold shadow-lg shadow-slate-900/30' : ''}
+                        text-[11px] font-bold
+                        ${isSaturday ? 'text-blue-700' : isSunday ? 'text-rose-700' : 'text-slate-700'}
+                        ${day.isToday ? 'text-white' : ''}
                       `}
                                         >
-                                            {dayOfWeekString}
+                                            {combinedDate}
                                         </div>
                                     </div>
                                 );
@@ -312,11 +312,11 @@ export default function WeeklyCalendar() {
                         </div>
 
                         {/* ボディ行: 未割り当て行（残り人数）を一番上に配置 */}
-                        <div className="flex border-b-2 border-slate-400 bg-gradient-to-r from-slate-100 to-slate-50 sticky top-[49px] z-[25] shadow-sm h-10">
+                        <div className="flex border-b-2 border-slate-400 bg-gradient-to-r from-slate-100 to-slate-50 sticky top-[32px] z-[25] shadow-sm h-9">
                             {/* 職長セル */}
                             <div className="sticky left-0 z-30 bg-gradient-to-r from-slate-100 to-slate-50 border-r-2 border-slate-400 shadow-md">
                                 <div className="w-32 h-full flex items-center justify-center">
-                                    <span className="text-sm font-bold text-slate-700 tracking-wide">
+                                    <span className="text-xs font-bold text-slate-700 tracking-wide">
                                         {unassignedEmployee.name}
                                     </span>
                                 </div>
@@ -349,15 +349,15 @@ export default function WeeklyCalendar() {
                                         `}
                                     >
                                         {remainingCount > 0 ? (
-                                            <span className="inline-block px-3 py-1 bg-slate-600 text-white rounded-full text-sm font-bold shadow-sm">
+                                            <span className="inline-block px-2 py-0.5 bg-slate-600 text-white rounded-full text-xs font-bold shadow-sm">
                                                 {remainingCount}人
                                             </span>
                                         ) : remainingCount === 0 ? (
-                                            <span className="inline-block px-3 py-1 bg-slate-400 text-white rounded-full text-sm font-bold shadow-sm">
+                                            <span className="inline-block px-2 py-0.5 bg-slate-400 text-white rounded-full text-xs font-bold shadow-sm">
                                                 0人
                                             </span>
                                         ) : (
-                                            <span className="inline-block px-3 py-1 bg-slate-700 text-white rounded-full text-sm font-bold shadow-sm">
+                                            <span className="inline-block px-2 py-0.5 bg-slate-700 text-white rounded-full text-xs font-bold shadow-sm">
                                                 {remainingCount}人
                                             </span>
                                         )}

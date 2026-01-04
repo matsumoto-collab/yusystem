@@ -28,7 +28,7 @@ export default function EmployeeRowComponent({
             <div className="sticky left-0 z-10 bg-white border-r-2 border-gray-200 shadow-sm">
                 <div className="w-32 h-full flex items-center justify-center px-2">
                     {showEmployeeName && (
-                        <span className="text-sm font-semibold text-gray-800 truncate">
+                        <span className="text-xs font-semibold text-gray-800 truncate">
                             {row.employeeName}
                         </span>
                     )}
