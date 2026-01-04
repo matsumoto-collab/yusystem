@@ -76,13 +76,6 @@ export default function EstimateListPage() {
         }
     };
 
-    // 統計情報
-    const stats = {
-        total: estimates.length,
-        draft: estimates.filter(e => e.status === 'draft').length,
-        sent: estimates.filter(e => e.status === 'sent').length,
-        approved: estimates.filter(e => e.status === 'approved').length,
-    };
 
     return (
         <div className="p-4 sm:p-6 h-full flex flex-col bg-gradient-to-br from-gray-50 to-white w-full max-w-[1800px] mx-auto">
@@ -94,25 +87,6 @@ export default function EstimateListPage() {
                 <p className="text-gray-600">登録されている全ての見積書を管理できます</p>
             </div>
 
-            {/* 統計カード */}
-            <div className="grid grid-cols-4 gap-4 mb-6">
-                <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-                    <div className="text-sm text-gray-600 mb-1">全体</div>
-                    <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
-                </div>
-                <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-                    <div className="text-sm text-gray-600 mb-1">下書き</div>
-                    <div className="text-2xl font-bold text-gray-500">{stats.draft}</div>
-                </div>
-                <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-                    <div className="text-sm text-blue-600 mb-1">送付済み</div>
-                    <div className="text-2xl font-bold text-blue-600">{stats.sent}</div>
-                </div>
-                <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-                    <div className="text-sm text-green-600 mb-1">承認済み</div>
-                    <div className="text-2xl font-bold text-green-600">{stats.approved}</div>
-                </div>
-            </div>
 
             {/* ツールバー */}
             <div className="mb-6 flex items-center justify-between gap-4">
