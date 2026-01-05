@@ -221,6 +221,12 @@ export default function SettingsPage() {
                                     </button>
                                 </div>
                             </div>
+                        ) : activeTab === 'unitprices' ? (
+                            // 単価マスター
+                            <UnitPriceMasterSettings />
+                        ) : activeTab === 'users' ? (
+                            // ユーザー管理
+                            <UserManagement />
                         ) : (
                             // List Management (Vehicles, Workers, Managers)
                             <div>
@@ -327,16 +333,6 @@ export default function SettingsPage() {
                                     </div>
                                 )}
                             </div>
-                        )}
-
-                        {/* 単価マスター */}
-                        {activeTab === 'unitprices' && (
-                            <UnitPriceMasterSettings />
-                        )}
-
-                        {/* ユーザー管理 */}
-                        {activeTab === 'users' && (
-                            <UserManagement />
                         )}
                     </div>
                 </div>
