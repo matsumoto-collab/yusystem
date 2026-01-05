@@ -57,6 +57,34 @@ export function EstimateProvider({ children }: { children: ReactNode }) {
         fetchEstimates();
     }, [fetchEstimates, session?.user?.email]);
 
+    // Polling for real-time updates
+    useEffect(() => {
+        if (status !== 'authenticated') return;
+
+        const POLLING_INTERVAL = 5000; // 5 seconds
+
+        // Handle page visibility change
+        const handleVisibilityChange = () => {
+            if (!document.hidden) {
+                fetchEstimates(); // Refresh immediately when tab becomes active
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        // Start polling
+        const intervalId = setInterval(() => {
+            if (!document.hidden) {
+                fetchEstimates();
+            }
+        }, POLLING_INTERVAL);
+
+        return () => {
+            clearInterval(intervalId);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
+    }, [status, fetchEstimates]);
+
     const addEstimate = useCallback(async (input: EstimateInput): Promise<Estimate> => {
         try {
             const response = await fetch('/api/estimates', {

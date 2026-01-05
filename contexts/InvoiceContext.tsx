@@ -60,6 +60,34 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
         fetchInvoices();
     }, [fetchInvoices, session?.user?.email]);
 
+    // Polling for real-time updates
+    useEffect(() => {
+        if (status !== 'authenticated') return;
+
+        const POLLING_INTERVAL = 5000; // 5 seconds
+
+        // Handle page visibility change
+        const handleVisibilityChange = () => {
+            if (!document.hidden) {
+                fetchInvoices(); // Refresh immediately when tab becomes active
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        // Start polling
+        const intervalId = setInterval(() => {
+            if (!document.hidden) {
+                fetchInvoices();
+            }
+        }, POLLING_INTERVAL);
+
+        return () => {
+            clearInterval(intervalId);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
+    }, [status, fetchInvoices]);
+
     const addInvoice = useCallback(async (input: InvoiceInput): Promise<Invoice> => {
         try {
             const response = await fetch('/api/invoices', {

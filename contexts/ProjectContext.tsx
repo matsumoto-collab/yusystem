@@ -61,6 +61,34 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
         fetchProjects();
     }, [fetchProjects, session?.user?.email]);
 
+    // Polling for real-time updates
+    useEffect(() => {
+        if (status !== 'authenticated') return;
+
+        const POLLING_INTERVAL = 5000; // 5 seconds
+
+        // Handle page visibility change
+        const handleVisibilityChange = () => {
+            if (!document.hidden) {
+                fetchProjects(); // Refresh immediately when tab becomes active
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        // Start polling
+        const intervalId = setInterval(() => {
+            if (!document.hidden) {
+                fetchProjects();
+            }
+        }, POLLING_INTERVAL);
+
+        return () => {
+            clearInterval(intervalId);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
+    }, [status, fetchProjects]);
+
     // Add project
     const addProject = useCallback(async (projectData: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>) => {
         try {
