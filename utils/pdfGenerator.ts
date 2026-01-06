@@ -98,7 +98,6 @@ function generateEstimatePage(
     companyInfo: CompanyInfo
 ): void {
     const pageWidth = 210;
-    const pageHeight = 297;
     const margin = 15;
 
     let y = margin;

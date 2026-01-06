@@ -11,7 +11,7 @@ export default function CustomersPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [_isSubmitting, setIsSubmitting] = useState(false);
 
     // 検索フィルター
     const filteredCustomers = customers.filter(customer =>

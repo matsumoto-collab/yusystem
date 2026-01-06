@@ -6,7 +6,7 @@ import bcrypt from 'bcryptjs';
  * Initialize database with default admin user
  * POST /api/init-db
  */
-export async function POST(req: NextRequest) {
+export async function POST(_req: NextRequest) {
     try {
         // Check if any users exist
         const userCount = await prisma.user.count();

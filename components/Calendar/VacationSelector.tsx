@@ -10,7 +10,7 @@ interface VacationSelectorProps {
 }
 
 export default function VacationSelector({
-    dateKey,
+    dateKey: _dateKey,
     selectedEmployeeIds,
     onAddEmployee,
     onRemoveEmployee,

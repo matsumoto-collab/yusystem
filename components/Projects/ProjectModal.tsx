@@ -22,7 +22,7 @@ export default function ProjectModal({
     onSubmit,
     onDelete,
     initialData,
-    title = '案件登録',
+    title: _title = '案件登録',
     defaultDate,
     defaultEmployeeId,
 }: ProjectModalProps) {

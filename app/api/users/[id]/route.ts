@@ -10,7 +10,7 @@ import { canManageUsers } from '@/utils/permissions';
  * GET /api/users/[id]
  */
 export async function GET(
-    req: NextRequest,
+    _req: NextRequest,
     { params }: { params: { id: string } }
 ) {
     try {
@@ -132,7 +132,7 @@ export async function PATCH(
  * DELETE /api/users/[id]
  */
 export async function DELETE(
-    req: NextRequest,
+    _req: NextRequest,
     { params }: { params: { id: string } }
 ) {
     try {

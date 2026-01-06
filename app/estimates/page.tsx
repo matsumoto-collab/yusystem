@@ -20,7 +20,7 @@ export default function EstimateListPage() {
     const [editingEstimate, setEditingEstimate] = useState<Estimate | null>(null);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
     const [selectedEstimate, setSelectedEstimate] = useState<Estimate | null>(null);
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [_isSubmitting, setIsSubmitting] = useState(false);
 
     // プロジェクト名を取得
     const getProjectName = (projectId: string) => {

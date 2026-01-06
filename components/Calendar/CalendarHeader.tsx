@@ -1,5 +1,4 @@
 import React from 'react';
-import { formatDate, getWeekRangeString } from '@/utils/dateUtils';
 import { WeekDay } from '@/types/calendar';
 
 interface CalendarHeaderProps {
@@ -12,15 +11,13 @@ interface CalendarHeaderProps {
 }
 
 export default function CalendarHeader({
-    weekDays,
+    weekDays: _weekDays,
     onPreviousWeek,
     onNextWeek,
     onPreviousDay,
     onNextDay,
     onToday,
 }: CalendarHeaderProps) {
-    const weekRangeString = getWeekRangeString(weekDays);
-    const currentMonth = weekDays.length > 0 ? formatDate(weekDays[0].date, 'month') : '';
 
     return (
         <div className="bg-gradient-to-r from-slate-50 via-white to-slate-50 border-b border-slate-200 p-2 shadow-md">

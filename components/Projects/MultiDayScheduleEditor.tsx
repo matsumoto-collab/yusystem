@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { DailySchedule, ConstructionType } from '@/types/calendar';
-import { Plus, X, Calendar } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
 import { mockEmployees } from '@/data/mockEmployees';
 
 interface MultiDayScheduleEditorProps {
@@ -12,7 +12,7 @@ interface MultiDayScheduleEditorProps {
 }
 
 export default function MultiDayScheduleEditor({
-    type,
+    type: _type,
     dailySchedules,
     onChange,
 }: MultiDayScheduleEditorProps) {
@@ -122,9 +122,6 @@ export default function MultiDayScheduleEditor({
         );
         onChange(updated);
     };
-
-    const typeLabel = type === 'assembly' ? '組立' : type === 'demolition' ? '解体' : 'その他';
-    const typeColor = type === 'assembly' ? 'blue' : type === 'demolition' ? 'red' : 'yellow';
 
     return (
         <div className="space-y-4">

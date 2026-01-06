@@ -8,7 +8,7 @@ import { isSameDay } from './dateUtils';
 export function generateEmployeeRows(
     employees: Employee[],
     events: CalendarEvent[],
-    weekDays: WeekDay[]
+    _weekDays: WeekDay[]
 ): EmployeeRow[] {
     const rows: EmployeeRow[] = [];
 
@@ -29,7 +29,7 @@ export function generateEmployeeRows(
         });
 
         // 各日付のイベントをsortOrder順にソート
-        eventsByDate.forEach((events, dateKey) => {
+        eventsByDate.forEach((events, _dateKey) => {
             events.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
         });
 

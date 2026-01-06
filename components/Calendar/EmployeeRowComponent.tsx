@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { EmployeeRow } from '@/types/calendar';
 import { WeekDay } from '@/types/calendar';
 import { getEventsForDate, formatDateKey } from '@/utils/employeeUtils';
@@ -25,7 +25,6 @@ export default function EmployeeRowComponent({
     onMoveEvent,
     onRemoveForeman,
 }: EmployeeRowComponentProps) {
-    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     const handleDelete = () => {
         if (onRemoveForeman) {

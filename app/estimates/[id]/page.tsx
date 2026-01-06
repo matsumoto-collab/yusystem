@@ -25,10 +25,12 @@ export default function EstimateDetailPage() {
     const project = estimate ? projects.find((p: Project) => p.id === estimate.projectId) : null;
 
     useEffect(() => {
+        let currentUrl = '';
         if (estimate && project && companyInfo) {
             const generatePDF = async () => {
                 try {
                     const url = await generateEstimatePDFBlob(estimate, project, companyInfo);
+                    currentUrl = url;
                     setPdfUrl(url);
                 } catch (error) {
                     console.error('PDF生成エラー:', error);
@@ -36,14 +38,13 @@ export default function EstimateDetailPage() {
             };
 
             generatePDF();
-
-            // クリーンアップ
-            return () => {
-                if (pdfUrl) {
-                    URL.revokeObjectURL(pdfUrl);
-                }
-            };
         }
+        // クリーンアップ
+        return () => {
+            if (currentUrl) {
+                URL.revokeObjectURL(currentUrl);
+            }
+        };
     }, [estimate, project, companyInfo]);
 
     const handleDownload = () => {

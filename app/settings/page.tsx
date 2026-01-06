@@ -6,10 +6,9 @@ import { useMasterData } from '@/hooks/useMasterData';
 import { Trash2, Edit2, Plus, Check, X } from 'lucide-react';
 import UnitPriceMasterSettings from '@/components/Settings/UnitPriceMasterSettings';
 import UserManagement from '@/components/Settings/UserManagement';
-import { canManageUsers } from '@/utils/permissions';
 
 export default function SettingsPage() {
-    const { data: session, status } = useSession();
+    const { data: session } = useSession();
     const {
         vehicles,
         workers,

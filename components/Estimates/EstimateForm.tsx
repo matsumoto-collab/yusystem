@@ -123,19 +123,6 @@ export default function EstimateForm({ initialData, onSubmit, onCancel }: Estima
         }
     }, [projectId, projects, customers, title]);
 
-    // 新規顧客を追加
-    const handleAddCustomer = (data: any) => {
-        addCustomer(data);
-        setIsCustomerModalOpen(false);
-        // 追加した顧客を自動選択
-        setTimeout(() => {
-            const newCustomer = customers.find(c => c.name === data.name);
-            if (newCustomer) {
-                setCustomerId(newCustomer.id);
-            }
-        }, 100);
-    };
-
     // 消費税率
     const TAX_RATE = 0.1;
 

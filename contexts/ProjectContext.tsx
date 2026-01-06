@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useCallback, useMemo, useState, useEffect } from 'react';
+import React, { createContext, useContext, useCallback, useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { Project, CalendarEvent, CONSTRUCTION_TYPE_COLORS } from '@/types/calendar';
 
@@ -250,7 +250,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
             // New structure: workSchedules
             if (project.workSchedules && project.workSchedules.length > 0) {
                 project.workSchedules.forEach(schedule => {
-                    schedule.dailySchedules.forEach((daily, index) => {
+                    schedule.dailySchedules.forEach((daily, _index) => {
                         const dateKey = daily.date.toISOString().split('T')[0];
                         events.push({
                             ...project,

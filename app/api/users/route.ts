@@ -9,7 +9,7 @@ import { canManageUsers } from '@/utils/permissions';
  * Get all users
  * GET /api/users
  */
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
     try {
         const session = await getServerSession(authOptions);
 

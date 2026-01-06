@@ -14,7 +14,7 @@ export default function ProjectListPage() {
     const [editingProject, setEditingProject] = useState<Partial<Project> | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [sortBy, setSortBy] = useState<'date' | 'title'>('date');
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [_isSubmitting, setIsSubmitting] = useState(false);
 
     // 職長名を取得
     const getEmployeeName = (employeeId: string) => {

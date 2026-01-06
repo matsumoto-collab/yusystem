@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useUnitPriceMaster } from '@/contexts/UnitPriceMasterContext';
 import { UnitPriceMaster, UnitPriceMasterInput, TEMPLATE_LABELS, CATEGORY_LABELS, TemplateType, CategoryType } from '@/types/unitPrice';
-import { Plus, Edit, Trash2, X, Check } from 'lucide-react';
+import { Plus, Edit, Trash2 } from 'lucide-react';
 
 export default function UnitPriceMasterSettings() {
     const { unitPrices, addUnitPrice, updateUnitPrice, deleteUnitPrice } = useUnitPriceMaster();

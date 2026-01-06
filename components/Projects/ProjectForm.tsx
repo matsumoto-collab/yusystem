@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Project, EventCategory, CATEGORY_COLORS, ConstructionType, CONSTRUCTION_TYPE_COLORS, CONSTRUCTION_TYPE_LABELS, DailySchedule, WorkSchedule } from '@/types/calendar';
+import { Project, EventCategory, CONSTRUCTION_TYPE_COLORS, DailySchedule, WorkSchedule } from '@/types/calendar';
 import { useMasterData } from '@/hooks/useMasterData';
 import { useProjects } from '@/contexts/ProjectContext';
 import { formatDateKey } from '@/utils/employeeUtils';

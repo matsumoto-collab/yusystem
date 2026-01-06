@@ -15,7 +15,7 @@ export default function InvoiceListPage() {
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [_isSubmitting, setIsSubmitting] = useState(false);
 
     // プロジェクト名を取得
     const getProjectName = (projectId: string) => {

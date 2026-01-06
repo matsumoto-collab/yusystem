@@ -74,7 +74,7 @@ export async function PATCH(
  * DELETE /api/estimates/[id]
  */
 export async function DELETE(
-    req: NextRequest,
+    _req: NextRequest,
     { params }: { params: { id: string } }
 ) {
     try {

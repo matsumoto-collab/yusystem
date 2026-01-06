@@ -5,7 +5,7 @@ import { Estimate } from '@/types/estimate';
 import { Project } from '@/types/calendar';
 import { CompanyInfo } from '@/types/company';
 import { generateEstimatePDFBlob, exportEstimatePDF } from '@/utils/pdfGenerator';
-import { X, FileDown, Printer, Trash2, Edit, ExternalLink } from 'lucide-react';
+import { X, FileDown, Printer, Trash2, Edit } from 'lucide-react';
 
 interface EstimateDetailModalProps {
     isOpen: boolean;
@@ -30,10 +30,12 @@ export default function EstimateDetailModal({
     const [activeTab, setActiveTab] = useState<'estimate' | 'budget'>('estimate');
 
     useEffect(() => {
+        let currentUrl = '';
         if (isOpen && estimate && project && companyInfo) {
             const generatePDF = async () => {
                 try {
                     const url = await generateEstimatePDFBlob(estimate, project, companyInfo);
+                    currentUrl = url;
                     setPdfUrl(url);
                 } catch (error) {
                     console.error('PDF生成エラー:', error);
@@ -41,14 +43,13 @@ export default function EstimateDetailModal({
             };
 
             generatePDF();
-
-            // クリーンアップ
-            return () => {
-                if (pdfUrl) {
-                    URL.revokeObjectURL(pdfUrl);
-                }
-            };
         }
+        // クリーンアップ
+        return () => {
+            if (currentUrl) {
+                URL.revokeObjectURL(currentUrl);
+            }
+        };
     }, [isOpen, estimate, project, companyInfo]);
 
     const handleDownload = () => {
