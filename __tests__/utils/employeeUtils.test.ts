@@ -34,6 +34,7 @@ describe('employeeUtils', () => {
             startDate,
             endDate: startDate,
             assignedEmployeeId,
+            category: 'construction',
             color: '#3B82F6',
         });
 

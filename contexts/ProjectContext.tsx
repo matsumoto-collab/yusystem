@@ -66,29 +66,50 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         if (status !== 'authenticated') return;
 
-        // Import supabase client dynamically to avoid SSR issues
-        import('@/lib/supabase').then(({ supabase }) => {
-            const channel = supabase
-                .channel('projects-changes')
-                .on(
-                    'postgres_changes',
-                    {
-                        event: '*', // Listen to INSERT, UPDATE, DELETE
-                        schema: 'public',
-                        table: 'Project',
-                    },
-                    (payload) => {
-                        console.log('Project changed:', payload);
-                        // Refresh data when changes occur
-                        fetchProjects();
-                    }
-                )
-                .subscribe();
+        let channel: ReturnType<typeof import('@/lib/supabase').supabase.channel> | null = null;
+        let isSubscribed = true;
 
-            return () => {
-                supabase.removeChannel(channel);
-            };
-        });
+        const setupRealtimeSubscription = async () => {
+            try {
+                const { supabase } = await import('@/lib/supabase');
+
+                if (!isSubscribed) return;
+
+                channel = supabase
+                    .channel('projects-realtime')
+                    .on(
+                        'postgres_changes',
+                        {
+                            event: '*', // Listen to INSERT, UPDATE, DELETE
+                            schema: 'public',
+                            table: 'Project',
+                        },
+                        (payload) => {
+                            console.log('[Realtime] Project changed:', payload.eventType, payload);
+                            // Refresh data when changes occur from other clients
+                            fetchProjects();
+                        }
+                    )
+                    .subscribe((status) => {
+                        console.log('[Realtime] Subscription status:', status);
+                    });
+            } catch (error) {
+                console.error('[Realtime] Failed to setup subscription:', error);
+            }
+        };
+
+        setupRealtimeSubscription();
+
+        // Cleanup function
+        return () => {
+            isSubscribed = false;
+            if (channel) {
+                import('@/lib/supabase').then(({ supabase }) => {
+                    supabase.removeChannel(channel!);
+                    console.log('[Realtime] Channel removed');
+                });
+            }
+        };
     }, [status, fetchProjects]);
 
     // Add project

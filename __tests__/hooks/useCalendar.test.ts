@@ -9,6 +9,7 @@ describe('useCalendar', () => {
         startDate,
         endDate: startDate,
         assignedEmployeeId: 'employee-1',
+        category: 'construction',
         color: '#3B82F6',
     });
 

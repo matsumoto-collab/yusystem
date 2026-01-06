@@ -12,7 +12,8 @@ describe('permissions', () => {
     const createUser = (role: string, isActive: boolean = true, assignedProjects?: string[]): User => ({
         id: 'user-1',
         email: 'test@example.com',
-        name: 'Test User',
+        username: 'testuser',
+        displayName: 'Test User',
         role: role as User['role'],
         isActive,
         assignedProjects,
