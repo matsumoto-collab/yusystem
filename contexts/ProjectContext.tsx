@@ -61,12 +61,16 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
         }
     }, [status, hasFetched, fetchProjects]);
 
+    // Track if we're currently updating to avoid realtime conflicts
+    const [isUpdating, setIsUpdating] = useState(false);
+
     // Supabase Realtime subscription for instant updates
     useEffect(() => {
         if (status !== 'authenticated') return;
 
         let channel: any = null;
         let isSubscribed = true;
+        let debounceTimer: NodeJS.Timeout | null = null;
 
         const setupRealtimeSubscription = async () => {
             try {
@@ -83,9 +87,15 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
                             schema: 'public',
                             table: 'Project',
                         },
-                        (payload) => {
-                            console.log('[Realtime] Project changed:', payload.eventType, payload);
-                            fetchProjects();
+                        () => {
+                            // Debounce and skip if we're currently updating locally
+                            if (debounceTimer) clearTimeout(debounceTimer);
+                            debounceTimer = setTimeout(() => {
+                                if (!isUpdating) {
+                                    console.log('[Realtime] Fetching projects from other client change');
+                                    fetchProjects();
+                                }
+                            }, 500); // 500ms debounce
                         }
                     )
                     .subscribe((status) => {
@@ -100,13 +110,14 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
 
         return () => {
             isSubscribed = false;
+            if (debounceTimer) clearTimeout(debounceTimer);
             if (channel) {
                 import('@/lib/supabase').then(({ supabase }) => {
                     supabase.removeChannel(channel);
                 });
             }
         };
-    }, [status, fetchProjects]);
+    }, [status, fetchProjects, isUpdating]);
 
     // Add a new project
     const addProject = useCallback(async (projectData: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>) => {
@@ -141,6 +152,9 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
 
     // Update a project
     const updateProject = useCallback(async (id: string, updates: Partial<Project>) => {
+        // Mark as updating to prevent realtime from overwriting
+        setIsUpdating(true);
+
         // Optimistic update - immediately update local state
         const previousProjects = projects;
         setProjects(prev => prev.map(p =>
@@ -178,6 +192,9 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
             setProjects(previousProjects);
             console.error('Failed to update project:', error);
             throw error;
+        } finally {
+            // Allow realtime updates again after a short delay
+            setTimeout(() => setIsUpdating(false), 1000);
         }
     }, [projects]);
 
