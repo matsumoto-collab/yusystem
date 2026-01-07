@@ -107,7 +107,7 @@ export interface EmployeeRow {
 }
 
 // カレンダービューの型
-export type ViewType = 'gantt' | 'calendar';
+export type ViewType = 'calendar';
 
 // カラーパレット（プレミアム・モダンデザイン）
 export const CALENDAR_COLORS = {

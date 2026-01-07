@@ -1,11 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigation } from '@/contexts/NavigationContext';
-import GanttChart from './GanttChart';
 import WeeklyCalendar from './Calendar/WeeklyCalendar';
-import ViewTabs from './Calendar/ViewTabs';
-import { ViewType } from '@/types/calendar';
 import SettingsPage from '@/app/settings/page';
 import ProjectListPage from '@/app/projects/page';
 import EstimateListPage from '@/app/estimates/page';
@@ -26,20 +23,16 @@ function PlaceholderPage({ title }: { title: string }) {
 
 export default function MainContent() {
     const { activePage } = useNavigation();
-    const [activeView, setActiveView] = useState<ViewType>('calendar');
 
     // Render content based on active page
     const renderContent = () => {
         switch (activePage) {
             case 'schedule':
-                // Schedule management (calendar/gantt view)
+                // Schedule management (calendar view)
                 return (
-                    <>
-                        <ViewTabs activeView={activeView} onViewChange={setActiveView} />
-                        <div className="flex-1 min-h-0">
-                            {activeView === 'gantt' ? <GanttChart /> : <WeeklyCalendar />}
-                        </div>
-                    </>
+                    <div className="flex-1 min-h-0">
+                        <WeeklyCalendar />
+                    </div>
                 );
 
             case 'settings':
