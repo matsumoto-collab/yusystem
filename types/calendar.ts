@@ -70,6 +70,9 @@ export interface Project extends CalendarEvent {
     demolitionDuration?: number;  // 解体日数
     vehicles?: string[];          // 車両（DBとの互換性）
 
+    // 集合時間
+    meetingTime?: string;  // 例: "08:00"
+
     // 複数日作業スケジュール（新システム）
     workSchedules?: WorkSchedule[];
 

@@ -1,8 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigation } from '@/contexts/NavigationContext';
 import WeeklyCalendar from './Calendar/WeeklyCalendar';
+import ScheduleViewTabs, { ScheduleView } from './Schedule/ScheduleViewTabs';
+import AssignmentTable from './Schedule/AssignmentTable';
 import SettingsPage from '@/app/settings/page';
 import ProjectListPage from '@/app/projects/page';
 import EstimateListPage from '@/app/estimates/page';
@@ -23,16 +25,27 @@ function PlaceholderPage({ title }: { title: string }) {
 
 export default function MainContent() {
     const { activePage } = useNavigation();
+    const [scheduleView, setScheduleView] = useState<ScheduleView>('calendar');
 
     // Render content based on active page
     const renderContent = () => {
         switch (activePage) {
             case 'schedule':
-                // Schedule management (calendar view)
+                // Schedule management (calendar/assignment view)
                 return (
-                    <div className="flex-1 min-h-0">
-                        <WeeklyCalendar />
-                    </div>
+                    <>
+                        <ScheduleViewTabs
+                            activeView={scheduleView}
+                            onViewChange={setScheduleView}
+                        />
+                        <div className="flex-1 min-h-0">
+                            {scheduleView === 'calendar' ? (
+                                <WeeklyCalendar />
+                            ) : (
+                                <AssignmentTable />
+                            )}
+                        </div>
+                    </>
                 );
 
             case 'settings':

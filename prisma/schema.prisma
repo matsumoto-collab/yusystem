@@ -16,7 +16,8 @@ model User {
   email            String   @unique
   displayName      String
   passwordHash     String
-  role             String   @default("VIEWER")
+  role             String   @default("manager")  // admin, manager, foreman1, foreman2, worker
+  teamId           String?  // 所属職長ID（職方用）
   assignedProjects String?  // JSON array of project IDs
   isActive         Boolean  @default(true)
   createdAt        DateTime @default(now())
@@ -44,6 +45,7 @@ model Project {
   workers              String?  // JSON array
   vehicles             String?  // JSON array
   remarks              String?
+  meetingTime          String?  // 集合時間（例: "08:00"）
   sortOrder            Int      @default(0)
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
