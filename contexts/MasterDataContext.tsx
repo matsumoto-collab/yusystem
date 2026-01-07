@@ -53,13 +53,17 @@ export function MasterDataProvider({ children }: { children: ReactNode }) {
     // Fetch all master data from API
     const fetchMasterData = useCallback(async () => {
         try {
+            console.log('[MasterData] Fetching master data...');
             const response = await fetch('/api/master-data');
             if (response.ok) {
                 const data = await response.json();
+                console.log('[MasterData] Received data:', data);
                 setVehicles(data.vehicles || []);
                 setWorkers(data.workers || []);
                 setManagers(data.managers || []);
                 setTotalMembers(data.totalMembers || 20);
+            } else {
+                console.log('[MasterData] Failed to fetch:', response.status);
             }
         } catch (error) {
             console.error('Failed to fetch master data:', error);
