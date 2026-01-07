@@ -52,11 +52,6 @@ export function MasterDataProvider({ children }: { children: ReactNode }) {
 
     // Fetch all master data from API
     const fetchMasterData = useCallback(async () => {
-        if (status !== 'authenticated') {
-            setIsLoading(false);
-            return;
-        }
-
         try {
             const response = await fetch('/api/master-data');
             if (response.ok) {
@@ -71,12 +66,16 @@ export function MasterDataProvider({ children }: { children: ReactNode }) {
         } finally {
             setIsLoading(false);
         }
-    }, [status]);
+    }, []);
 
-    // Load data on mount
+    // Load data when authenticated
     useEffect(() => {
-        fetchMasterData();
-    }, [fetchMasterData]);
+        if (status === 'authenticated') {
+            fetchMasterData();
+        } else if (status === 'unauthenticated') {
+            setIsLoading(false);
+        }
+    }, [status, fetchMasterData]);
 
     // Supabase Realtime subscription for master data
     useEffect(() => {
