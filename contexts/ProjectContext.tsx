@@ -317,14 +317,18 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
             }
 
             if (!project.assemblyStartDate && !project.demolitionStartDate) {
+                // constructionTypeに基づいて色を設定
+                const constructionType = project.constructionType || 'other';
+                const color = CONSTRUCTION_TYPE_COLORS[constructionType] || CONSTRUCTION_TYPE_COLORS.other;
+
                 events.push({
                     id: project.id,
                     title: project.title,
                     startDate: project.startDate,
                     endDate: project.endDate,
-                    category: 'other',
-                    color: CONSTRUCTION_TYPE_COLORS.other,
-                    constructionType: 'other',
+                    category: constructionType === 'assembly' ? 'construction' : constructionType === 'demolition' ? 'construction' : 'other',
+                    color: color,
+                    constructionType: constructionType,
                     assignedEmployeeId: project.assignedEmployeeId,
                     customer: project.customer,
                     location: project.location,
