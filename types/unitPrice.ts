@@ -3,9 +3,6 @@
 // テンプレートタイプ
 export type TemplateType = 'frequent' | 'large' | 'medium' | 'residential';
 
-// カテゴリタイプ
-export type CategoryType = 'kasetsu' | 'large' | 'shinchiku';
-
 // テンプレートラベル
 export const TEMPLATE_LABELS: Record<TemplateType, string> = {
     frequent: 'よく使う項目',
@@ -14,20 +11,12 @@ export const TEMPLATE_LABELS: Record<TemplateType, string> = {
     residential: '住宅見積用',
 };
 
-// カテゴリラベル
-export const CATEGORY_LABELS: Record<CategoryType, string> = {
-    kasetsu: '仮設工事',
-    large: '大規模工事',
-    shinchiku: '新築工事',
-};
-
 // 単価マスター
 export interface UnitPriceMaster {
     id: string;
     description: string;    // 品目・内容
     unit: string;          // 単位（例: 式、m、個、日）
     unitPrice: number;     // 単価
-    category: CategoryType; // カテゴリ
     templates: TemplateType[]; // 所属するテンプレート（複数可）
     notes?: string;        // 備考
     createdAt: Date;

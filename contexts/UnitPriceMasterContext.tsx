@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useCallback, useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { UnitPriceMaster, UnitPriceMasterInput, TemplateType, CategoryType } from '@/types/unitPrice';
+import { UnitPriceMaster, UnitPriceMasterInput, TemplateType } from '@/types/unitPrice';
 
 interface UnitPriceMasterContextType {
     unitPrices: UnitPriceMaster[];
@@ -12,7 +12,6 @@ interface UnitPriceMasterContextType {
     deleteUnitPrice: (id: string) => Promise<void>;
     getUnitPriceById: (id: string) => UnitPriceMaster | undefined;
     getUnitPricesByTemplate: (template: TemplateType) => UnitPriceMaster[];
-    getUnitPricesByCategory: (category: CategoryType) => UnitPriceMaster[];
     refreshUnitPrices: () => Promise<void>;
 }
 
@@ -133,10 +132,6 @@ export function UnitPriceMasterProvider({ children }: { children: React.ReactNod
         return unitPrices.filter(up => up.templates.includes(template));
     }, [unitPrices]);
 
-    const getUnitPricesByCategory = useCallback((category: CategoryType) => {
-        return unitPrices.filter(up => up.category === category);
-    }, [unitPrices]);
-
     return (
         <UnitPriceMasterContext.Provider
             value={{
@@ -147,7 +142,6 @@ export function UnitPriceMasterProvider({ children }: { children: React.ReactNod
                 deleteUnitPrice,
                 getUnitPriceById,
                 getUnitPricesByTemplate,
-                getUnitPricesByCategory,
                 refreshUnitPrices: fetchUnitPrices,
             }}
         >

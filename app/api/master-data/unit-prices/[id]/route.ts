@@ -16,13 +16,12 @@ export async function PATCH(
 
         const { id } = await params;
         const body = await request.json();
-        const { description, unit, unitPrice, category, templates, notes } = body;
+        const { description, unit, unitPrice, templates, notes } = body;
 
         const updateData: Record<string, unknown> = {};
         if (description !== undefined) updateData.description = description;
         if (unit !== undefined) updateData.unit = unit;
         if (unitPrice !== undefined) updateData.unitPrice = unitPrice;
-        if (category !== undefined) updateData.category = category;
         if (templates !== undefined) updateData.templates = JSON.stringify(templates);
         if (notes !== undefined) updateData.notes = notes;
 

@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { useUnitPriceMaster } from '@/contexts/UnitPriceMasterContext';
-import { UnitPriceMaster, TemplateType, CategoryType, TEMPLATE_LABELS, CATEGORY_LABELS } from '@/types/unitPrice';
+import { UnitPriceMaster, TemplateType, TEMPLATE_LABELS } from '@/types/unitPrice';
 import { X } from 'lucide-react';
 
 interface UnitPriceMasterModalProps {
@@ -14,21 +14,12 @@ interface UnitPriceMasterModalProps {
 export default function UnitPriceMasterModal({ isOpen, onClose, onSelect }: UnitPriceMasterModalProps) {
     const { getUnitPricesByTemplate } = useUnitPriceMaster();
     const [selectedTemplate, setSelectedTemplate] = useState<TemplateType>('frequent');
-    const [selectedCategory, setSelectedCategory] = useState<CategoryType | 'all'>('all');
     const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
 
     // テンプレートで絞り込んだ項目を取得
     const templateItems = useMemo(() => {
         return getUnitPricesByTemplate(selectedTemplate);
     }, [selectedTemplate, getUnitPricesByTemplate]);
-
-    // カテゴリでさらに絞り込み
-    const filteredItems = useMemo(() => {
-        if (selectedCategory === 'all') {
-            return templateItems;
-        }
-        return templateItems.filter(item => item.category === selectedCategory);
-    }, [templateItems, selectedCategory]);
 
     // 項目の選択/選択解除
     const toggleItem = (id: string) => {
@@ -43,7 +34,7 @@ export default function UnitPriceMasterModal({ isOpen, onClose, onSelect }: Unit
 
     // 選択した項目を追加
     const handleAdd = () => {
-        const itemsToAdd = filteredItems.filter(item => selectedItems.has(item.id));
+        const itemsToAdd = templateItems.filter(item => selectedItems.has(item.id));
         onSelect(itemsToAdd);
         setSelectedItems(new Set());
         onClose();
@@ -94,32 +85,15 @@ export default function UnitPriceMasterModal({ isOpen, onClose, onSelect }: Unit
                     </div>
                 </div>
 
-                {/* カテゴリフィルター */}
-                <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
-                    <div className="flex items-center gap-4">
-                        <label className="text-sm font-semibold text-gray-700">カテゴリ:</label>
-                        <select
-                            value={selectedCategory}
-                            onChange={(e) => setSelectedCategory(e.target.value as CategoryType | 'all')}
-                            className="px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
-                        >
-                            <option value="all">全て</option>
-                            {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
-                                <option key={key} value={key}>{label}</option>
-                            ))}
-                        </select>
-                    </div>
-                </div>
-
                 {/* 項目一覧 */}
                 <div className="flex-1 overflow-y-auto p-6">
-                    {filteredItems.length === 0 ? (
+                    {templateItems.length === 0 ? (
                         <div className="text-center py-12 text-gray-500">
                             該当する項目がありません
                         </div>
                     ) : (
                         <div className="space-y-2">
-                            {filteredItems.map(item => (
+                            {templateItems.map(item => (
                                 <label
                                     key={item.id}
                                     className={`flex items-start gap-3 p-4 border rounded-lg cursor-pointer transition-colors ${selectedItems.has(item.id)
@@ -138,9 +112,11 @@ export default function UnitPriceMasterModal({ isOpen, onClose, onSelect }: Unit
                                         <div className="text-sm text-gray-600 mt-1">
                                             単位: {item.unit} / 単価: ¥{item.unitPrice.toLocaleString()}
                                         </div>
-                                        <div className="text-xs text-gray-500 mt-1">
-                                            カテゴリ: {CATEGORY_LABELS[item.category]}
-                                        </div>
+                                        {item.notes && (
+                                            <div className="text-xs text-gray-500 mt-1">
+                                                備考: {item.notes}
+                                            </div>
+                                        )}
                                     </div>
                                 </label>
                             ))}

@@ -2,27 +2,26 @@
 
 import React, { useState } from 'react';
 import { useUnitPriceMaster } from '@/contexts/UnitPriceMasterContext';
-import { UnitPriceMaster, UnitPriceMasterInput, TEMPLATE_LABELS, CATEGORY_LABELS, TemplateType, CategoryType } from '@/types/unitPrice';
+import { UnitPriceMaster, UnitPriceMasterInput, TEMPLATE_LABELS, TemplateType } from '@/types/unitPrice';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 
 export default function UnitPriceMasterSettings() {
     const { unitPrices, addUnitPrice, updateUnitPrice, deleteUnitPrice } = useUnitPriceMaster();
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingItem, setEditingItem] = useState<UnitPriceMaster | null>(null);
-    const [filterCategory, setFilterCategory] = useState<CategoryType | 'all'>('all');
+    const [filterTemplate, setFilterTemplate] = useState<TemplateType | 'all'>('all');
 
     const [formData, setFormData] = useState<UnitPriceMasterInput>({
         description: '',
         unit: '',
         unitPrice: 0,
-        category: 'kasetsu',
         templates: [],
         notes: '',
     });
 
-    const filteredUnitPrices = filterCategory === 'all'
+    const filteredUnitPrices = filterTemplate === 'all'
         ? unitPrices
-        : unitPrices.filter(up => up.category === filterCategory);
+        : unitPrices.filter(up => up.templates.includes(filterTemplate));
 
     const handleOpenForm = (item?: UnitPriceMaster) => {
         if (item) {
@@ -31,7 +30,6 @@ export default function UnitPriceMasterSettings() {
                 description: item.description,
                 unit: item.unit,
                 unitPrice: item.unitPrice,
-                category: item.category,
                 templates: item.templates,
                 notes: item.notes || '',
             });
@@ -41,7 +39,6 @@ export default function UnitPriceMasterSettings() {
                 description: '',
                 unit: '',
                 unitPrice: 0,
-                category: 'kasetsu',
                 templates: [],
                 notes: '',
             });
@@ -100,16 +97,16 @@ export default function UnitPriceMasterSettings() {
                 </button>
             </div>
 
-            {/* カテゴリフィルター */}
+            {/* テンプレートフィルター */}
             <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">カテゴリで絞り込み</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">テンプレートで絞り込み</label>
                 <select
-                    value={filterCategory}
-                    onChange={(e) => setFilterCategory(e.target.value as CategoryType | 'all')}
+                    value={filterTemplate}
+                    onChange={(e) => setFilterTemplate(e.target.value as TemplateType | 'all')}
                     className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
                 >
                     <option value="all">全て</option>
-                    {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
+                    {Object.entries(TEMPLATE_LABELS).map(([key, label]) => (
                         <option key={key} value={key}>{label}</option>
                     ))}
                 </select>
@@ -129,7 +126,6 @@ export default function UnitPriceMasterSettings() {
                                     <h3 className="text-lg font-bold text-gray-900">{item.description}</h3>
                                     <div className="mt-2 space-y-1 text-sm text-gray-600">
                                         <p>単位: {item.unit} / 単価: ¥{item.unitPrice.toLocaleString()}</p>
-                                        <p>カテゴリ: {CATEGORY_LABELS[item.category]}</p>
                                         {item.templates.length > 0 && (
                                             <p>テンプレート: {item.templates.map(t => TEMPLATE_LABELS[t]).join(', ')}</p>
                                         )}
@@ -210,22 +206,6 @@ export default function UnitPriceMasterSettings() {
                                             min="0"
                                         />
                                     </div>
-                                </div>
-
-                                {/* カテゴリ */}
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                        カテゴリ <span className="text-red-500">*</span>
-                                    </label>
-                                    <select
-                                        value={formData.category}
-                                        onChange={(e) => setFormData({ ...formData, category: e.target.value as CategoryType })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
-                                    >
-                                        {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
-                                            <option key={key} value={key}>{label}</option>
-                                        ))}
-                                    </select>
                                 </div>
 
                                 {/* テンプレート */}

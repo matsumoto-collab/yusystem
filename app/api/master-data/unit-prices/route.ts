@@ -38,9 +38,9 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { description, unit, unitPrice, category, templates, notes } = body;
+        const { description, unit, unitPrice, templates, notes } = body;
 
-        if (!description || !unit || unitPrice === undefined || !category || !templates) {
+        if (!description || !unit || unitPrice === undefined || !templates) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
@@ -49,7 +49,6 @@ export async function POST(request: NextRequest) {
                 description,
                 unit,
                 unitPrice,
-                category,
                 templates: JSON.stringify(templates),
                 notes: notes || null,
             },

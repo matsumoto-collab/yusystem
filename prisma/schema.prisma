@@ -167,14 +167,12 @@ model UnitPriceMaster {
   description String   // 品目・内容
   unit        String   // 単位（式、m、個、日）
   unitPrice   Float    // 単価
-  category    String   // カテゴリ（kasetsu, large, shinchiku）
   templates   String   // テンプレート配列をJSON文字列で保存
   notes       String?  // 備考
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  @@index([category])
   @@index([description])
 }
 
