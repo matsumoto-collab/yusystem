@@ -28,7 +28,7 @@ export async function GET(_req: NextRequest) {
             where: {
                 isActive: true,
                 role: {
-                    in: ['worker', 'WORKER', 'foreman2', 'FOREMAN2'],
+                    in: ['worker', 'WORKER', 'foreman2', 'FOREMAN2', 'foreman1', 'FOREMAN1'],
                 },
             },
             select: {
