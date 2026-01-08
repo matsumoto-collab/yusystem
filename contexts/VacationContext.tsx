@@ -60,8 +60,39 @@ export function VacationProvider({ children }: { children: React.ReactNode }) {
 
                 channel = supabase
                     .channel('vacations-realtime')
-                    .on('postgres_changes', { event: '*', schema: 'public', table: 'VacationRecord' }, () => {
-                        fetchVacations();
+                    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'VacationRecord' }, (payload: any) => {
+                        const record = payload.new;
+                        if (record && record.dateKey) {
+                            setVacations(prev => ({
+                                ...prev,
+                                [record.dateKey]: {
+                                    employeeIds: JSON.parse(record.employeeIds || '[]'),
+                                    remarks: record.remarks || '',
+                                },
+                            }));
+                        }
+                    })
+                    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'VacationRecord' }, (payload: any) => {
+                        const record = payload.new;
+                        if (record && record.dateKey) {
+                            setVacations(prev => ({
+                                ...prev,
+                                [record.dateKey]: {
+                                    employeeIds: JSON.parse(record.employeeIds || '[]'),
+                                    remarks: record.remarks || '',
+                                },
+                            }));
+                        }
+                    })
+                    .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'VacationRecord' }, (payload: any) => {
+                        const record = payload.old;
+                        if (record && record.dateKey) {
+                            setVacations(prev => {
+                                const newState = { ...prev };
+                                delete newState[record.dateKey];
+                                return newState;
+                            });
+                        }
                     })
                     .subscribe();
             } catch (error) {
@@ -79,7 +110,7 @@ export function VacationProvider({ children }: { children: React.ReactNode }) {
                 });
             }
         };
-    }, [status, fetchVacations]);
+    }, [status]);
 
     const saveVacation = useCallback(async (dateKey: string, employeeIds: string[], remarks: string) => {
         try {
