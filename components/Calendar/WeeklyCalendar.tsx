@@ -426,7 +426,7 @@ export default function WeeklyCalendar({ partnerMode = false, partnerId }: Weekl
                                     row={row}
                                     weekDays={weekDays}
                                     showEmployeeName={true}
-                                    onEventClick={isReadOnly ? undefined : handleEventClick}
+                                    onEventClick={handleEventClick}
                                     onCellClick={isReadOnly ? undefined : handleCellClick}
                                     onMoveEvent={isReadOnly ? undefined : handleMoveEvent}
                                     onRemoveForeman={isReadOnly ? undefined : removeForeman}
@@ -476,6 +476,7 @@ export default function WeeklyCalendar({ partnerMode = false, partnerId }: Weekl
                 defaultDate={modalInitialData.startDate}
                 defaultEmployeeId={modalInitialData.assignedEmployeeId}
                 title={modalInitialData.id ? '案件編集' : '案件登録'}
+                readOnly={isReadOnly}
             />
 
             {/* 案件検索モーダル */}

@@ -5,12 +5,13 @@ import { Project, CONSTRUCTION_TYPE_COLORS, CONSTRUCTION_TYPE_LABELS } from '@/t
 
 interface ProjectDetailViewProps {
     project: Project;
-    onEdit: () => void;
+    onEdit?: () => void;
     onClose: () => void;
-    onDelete: () => void;
+    onDelete?: () => void;
+    readOnly?: boolean;
 }
 
-export default function ProjectDetailView({ project, onEdit, onClose, onDelete }: ProjectDetailViewProps) {
+export default function ProjectDetailView({ project, onEdit, onClose, onDelete, readOnly = false }: ProjectDetailViewProps) {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     // 案件担当者を配列として扱う
     const managers = Array.isArray(project.createdBy)
@@ -34,7 +35,9 @@ export default function ProjectDetailView({ project, onEdit, onClose, onDelete }
     };
 
     const confirmDelete = () => {
-        onDelete();
+        if (onDelete) {
+            onDelete();
+        }
         setShowDeleteConfirm(false);
     };
 
@@ -202,16 +205,18 @@ export default function ProjectDetailView({ project, onEdit, onClose, onDelete }
 
             {/* アクションボタン */}
             <div className="space-y-3 pt-4 border-t border-gray-200">
-                {/* 削除ボタン */}
-                <button
-                    onClick={handleDelete}
-                    className="w-full px-4 py-2 border border-red-300 bg-red-50 rounded-md text-red-700 hover:bg-red-100 transition-colors font-medium flex items-center justify-center gap-2"
-                >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                    削除
-                </button>
+                {/* 削除ボタン（読み取り専用では非表示） */}
+                {!readOnly && onDelete && (
+                    <button
+                        onClick={handleDelete}
+                        className="w-full px-4 py-2 border border-red-300 bg-red-50 rounded-md text-red-700 hover:bg-red-100 transition-colors font-medium flex items-center justify-center gap-2"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        削除
+                    </button>
+                )}
 
                 {/* 編集・閉じるボタン */}
                 <div className="flex gap-3">
@@ -221,12 +226,14 @@ export default function ProjectDetailView({ project, onEdit, onClose, onDelete }
                     >
                         閉じる
                     </button>
-                    <button
-                        onClick={onEdit}
-                        className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium"
-                    >
-                        編集
-                    </button>
+                    {!readOnly && onEdit && (
+                        <button
+                            onClick={onEdit}
+                            className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium"
+                        >
+                            編集
+                        </button>
+                    )}
                 </div>
             </div>
         </div>

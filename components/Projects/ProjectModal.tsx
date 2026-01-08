@@ -14,6 +14,7 @@ interface ProjectModalProps {
     title?: string;
     defaultDate?: Date;
     defaultEmployeeId?: string;
+    readOnly?: boolean;
 }
 
 export default function ProjectModal({
@@ -25,6 +26,7 @@ export default function ProjectModal({
     title: _title = '案件登録',
     defaultDate,
     defaultEmployeeId,
+    readOnly = false,
 }: ProjectModalProps) {
     // 編集モードの状態管理
     // 既存案件の場合は閲覧モード、新規作成の場合は編集モード
@@ -95,13 +97,14 @@ export default function ProjectModal({
 
                 {/* コンテンツ */}
                 <div className="px-6 py-4">
-                    {initialData?.id && !isEditMode ? (
-                        // 既存案件の閲覧モード
+                    {initialData?.id && (!isEditMode || readOnly) ? (
+                        // 既存案件の閲覧モード（readOnlyの場合は常に閲覧モード）
                         <ProjectDetailView
                             project={initialData as Project}
-                            onEdit={() => setIsEditMode(true)}
+                            onEdit={readOnly ? undefined : () => setIsEditMode(true)}
                             onClose={onClose}
-                            onDelete={handleDelete}
+                            onDelete={readOnly ? undefined : handleDelete}
+                            readOnly={readOnly}
                         />
                     ) : (
                         // 編集モード（新規作成または編集）
