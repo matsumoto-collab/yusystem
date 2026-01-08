@@ -23,12 +23,12 @@ export async function GET(_req: NextRequest) {
             return NextResponse.json({ error: '権限がありません' }, { status: 403 });
         }
 
-        // Get users with foreman1, foreman2, admin, or manager role
+        // Get users with foreman1, foreman2, admin, manager, or partner role
         const foremen = await prisma.user.findMany({
             where: {
                 isActive: true,
                 role: {
-                    in: ['foreman1', 'FOREMAN1', 'foreman2', 'FOREMAN2', 'admin', 'ADMIN', 'manager', 'MANAGER'],
+                    in: ['foreman1', 'FOREMAN1', 'foreman2', 'FOREMAN2', 'admin', 'ADMIN', 'manager', 'MANAGER', 'partner', 'PARTNER'],
                 },
             },
             select: {
