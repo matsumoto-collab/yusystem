@@ -230,17 +230,12 @@ export default function WeeklyCalendar({ partnerMode = false, partnerId }: Weekl
 
     // 矢印ボタンでイベントを上下に移動
     const handleMoveEvent = useCallback((eventId: string, direction: 'up' | 'down') => {
-        console.log('handleMoveEvent called:', eventId, direction);
-
         // 組立・解体のサフィックスを除去して元の案件IDを取得
         const projectId = eventId.replace(/-assembly$|-demolition$/, '');
         const event = projects.find(p => p.id === projectId);
         if (!event) {
-            console.log('Event not found:', projectId);
             return;
         }
-
-        console.log('Event found:', event);
 
         // 同じセル内のイベントを取得
         const cellEvents = projects.filter(p =>
@@ -248,30 +243,20 @@ export default function WeeklyCalendar({ partnerMode = false, partnerId }: Weekl
             formatDateKey(p.startDate) === formatDateKey(event.startDate)
         ).sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
 
-        console.log('Cell events:', cellEvents);
-
         const currentIndex = cellEvents.findIndex(e => e.id === projectId);
         if (currentIndex === -1) {
-            console.log('Current index not found');
             return;
         }
-
-        console.log('Current index:', currentIndex);
 
         // 移動先のインデックスを計算
         const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
         if (targetIndex < 0 || targetIndex >= cellEvents.length) {
-            console.log('Target index out of bounds:', targetIndex);
             return;
         }
-
-        console.log('Target index:', targetIndex);
 
         // 配列を入れ替えて、全イベントのsortOrderを再設定
         const newOrder = [...cellEvents];
         [newOrder[currentIndex], newOrder[targetIndex]] = [newOrder[targetIndex], newOrder[currentIndex]];
-
-        console.log('New order:', newOrder.map(e => e.title));
 
         // 全イベントのsortOrderを一括更新
         const updates = newOrder.map((evt, index) => ({
@@ -279,10 +264,7 @@ export default function WeeklyCalendar({ partnerMode = false, partnerId }: Weekl
             data: { sortOrder: index }
         }));
 
-        console.log('Batch updating:', updates);
         updateProjects(updates);
-
-        console.log('Update complete');
     }, [projects, updateProjects]);
 
     // サーバーサイドレンダリング時はローディング表示
