@@ -19,6 +19,7 @@ export default function AssignmentTable({ userRole = 'manager', userTeamId }: As
     // ワーカー・車両名のマップ
     const [workerNameMap, setWorkerNameMap] = useState<Map<string, string>>(new Map());
     const [vehicleNameMap, setVehicleNameMap] = useState<Map<string, string>>(new Map());
+    const [isNamesLoaded, setIsNamesLoaded] = useState(false);
 
     // ワーカー・車両名の取得
     useEffect(() => {
@@ -45,8 +46,10 @@ export default function AssignmentTable({ userRole = 'manager', userTeamId }: As
                     });
                     setVehicleNameMap(map);
                 }
+                setIsNamesLoaded(true);
             } catch (error) {
                 console.error('Failed to fetch names:', error);
+                setIsNamesLoaded(true);
             }
         };
 
@@ -242,7 +245,7 @@ export default function AssignmentTable({ userRole = 'manager', userTeamId }: As
                                                         </div>
 
                                                         {/* 確定済み手配情報表示 */}
-                                                        {project.isDispatchConfirmed && (
+                                                        {project.isDispatchConfirmed && isNamesLoaded && (
                                                             <div className="mt-3 p-3 bg-green-50 rounded-lg border border-green-200">
                                                                 <div className="flex items-center gap-2 text-green-700 font-medium mb-2">
                                                                     <CheckCircle className="w-4 h-4" />
