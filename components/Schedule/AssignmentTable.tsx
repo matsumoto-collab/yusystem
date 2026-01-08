@@ -103,19 +103,11 @@ export default function AssignmentTable({ userRole = 'manager', userTeamId }: As
 
         // workerロールの場合、自分がアサインされた案件のみに絞り込み
         if (userRole === 'worker' && userTeamId) {
-            console.log('Worker filter debug:', {
-                userTeamId,
-                dayProjectsCount: dayProjects.length,
-                projectsWithConfirmedWorkers: dayProjects.filter(p => p.confirmedWorkerIds?.length).map(p => ({
-                    id: p.id,
-                    title: p.title,
-                    confirmedWorkerIds: p.confirmedWorkerIds,
-                    includes: p.confirmedWorkerIds?.includes(userTeamId)
-                }))
-            });
             dayProjects = dayProjects.filter(project =>
                 project.confirmedWorkerIds?.includes(userTeamId)
             );
+            // workerビューでは職長グループ化せず、直接案件リストを返す
+            return { '_worker': dayProjects };
         }
 
         // 職長ごとにグループ化
