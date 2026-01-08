@@ -114,11 +114,12 @@ export default function WeeklyCalendar() {
         });
     }, [projects, updateProject]));
 
-    // 職長別の行データを生成（表示設定された職長のみ）
+    // 職長別の行データを生成（表示設定された職長のみ、順番も維持）
     const employeeRows = useMemo(() => {
-        // allForemenからEmployee形式に変換し、表示設定されたもののみフィルタ
-        const filteredEmployees: Employee[] = allForemen
-            .filter(foreman => displayedForemanIds.includes(foreman.id))
+        // displayedForemanIdsの順番を維持してEmployee形式に変換
+        const filteredEmployees: Employee[] = displayedForemanIds
+            .map(id => allForemen.find(f => f.id === id))
+            .filter((foreman): foreman is typeof allForemen[0] => foreman !== undefined)
             .map(foreman => ({
                 id: foreman.id,
                 name: foreman.displayName,

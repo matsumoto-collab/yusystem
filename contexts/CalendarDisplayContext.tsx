@@ -104,24 +104,14 @@ export function CalendarDisplayProvider({ children }: { children: React.ReactNod
     }, [displayedForemanIds, saveSettings]);
 
     const moveForeman = useCallback(async (employeeId: string, direction: 'up' | 'down') => {
-        console.log('moveForeman called:', { employeeId, direction, displayedForemanIds });
         const currentIndex = displayedForemanIds.indexOf(employeeId);
-        console.log('currentIndex:', currentIndex);
-        if (currentIndex === -1) {
-            console.log('Employee not found in displayedForemanIds');
-            return;
-        }
+        if (currentIndex === -1) return;
 
         const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
-        console.log('newIndex:', newIndex);
-        if (newIndex < 0 || newIndex >= displayedForemanIds.length) {
-            console.log('newIndex out of bounds');
-            return;
-        }
+        if (newIndex < 0 || newIndex >= displayedForemanIds.length) return;
 
         const newIds = [...displayedForemanIds];
         [newIds[currentIndex], newIds[newIndex]] = [newIds[newIndex], newIds[currentIndex]];
-        console.log('newIds after swap:', newIds);
         setDisplayedForemanIds(newIds);
         await saveSettings(newIds);
     }, [displayedForemanIds, saveSettings]);
