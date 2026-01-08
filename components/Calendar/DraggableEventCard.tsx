@@ -2,7 +2,7 @@ import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { CalendarEvent } from '@/types/calendar';
-import { ChevronUp, ChevronDown, ClipboardCheck, CheckCircle } from 'lucide-react';
+import { ChevronUp, ChevronDown, ClipboardCheck, CheckCircle, Users, Truck } from 'lucide-react';
 
 interface DraggableEventCardProps {
     event: CalendarEvent;
@@ -14,6 +14,8 @@ interface DraggableEventCardProps {
     onDispatch?: () => void;
     isDispatchConfirmed?: boolean;
     canDispatch?: boolean;
+    confirmedWorkerNames?: string[];
+    confirmedVehicleNames?: string[];
 }
 
 export default function DraggableEventCard({
@@ -26,6 +28,8 @@ export default function DraggableEventCard({
     onDispatch,
     isDispatchConfirmed = false,
     canDispatch = false,
+    confirmedWorkerNames = [],
+    confirmedVehicleNames = [],
 }: DraggableEventCardProps) {
     const {
         attributes,
@@ -124,6 +128,26 @@ export default function DraggableEventCard({
                                     <span className="truncate">{event.remarks}</span>
                                 </div>
                             )}
+
+                            {/* 確定済み職方表示 */}
+                            {isDispatchConfirmed && confirmedWorkerNames.length > 0 && (
+                                <div className="flex items-start gap-1 mt-1 pt-1 border-t border-gray-300/50">
+                                    <Users className="w-3 h-3 flex-shrink-0 mt-0.5 text-blue-600" />
+                                    <span className="text-xs text-blue-700 truncate">
+                                        {confirmedWorkerNames.join(', ')}
+                                    </span>
+                                </div>
+                            )}
+
+                            {/* 確定済み車両表示 */}
+                            {isDispatchConfirmed && confirmedVehicleNames.length > 0 && (
+                                <div className="flex items-start gap-1 mt-0.5">
+                                    <Truck className="w-3 h-3 flex-shrink-0 mt-0.5 text-green-600" />
+                                    <span className="text-xs text-green-700 truncate">
+                                        {confirmedVehicleNames.join(', ')}
+                                    </span>
+                                </div>
+                            )}
                         </div>
 
                         {/* 上下矢印ボタン */}
@@ -165,8 +189,8 @@ export default function DraggableEventCard({
                                         onDispatch?.();
                                     }}
                                     className={`p-0.5 rounded transition-colors ${isDispatchConfirmed
-                                            ? 'text-green-600 hover:bg-green-100'
-                                            : 'text-gray-700 hover:bg-gray-500 hover:bg-opacity-20'
+                                        ? 'text-green-600 hover:bg-green-100'
+                                        : 'text-gray-700 hover:bg-gray-500 hover:bg-opacity-20'
                                         }`}
                                     title={isDispatchConfirmed ? '手配確定済み' : '手配確定'}
                                 >
