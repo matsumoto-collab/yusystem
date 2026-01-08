@@ -14,6 +14,7 @@ interface DraggableEventCardProps {
     onDispatch?: () => void;
     isDispatchConfirmed?: boolean;
     canDispatch?: boolean;
+    disabled?: boolean;
 }
 
 export default function DraggableEventCard({
@@ -26,6 +27,7 @@ export default function DraggableEventCard({
     onDispatch,
     isDispatchConfirmed = false,
     canDispatch = false,
+    disabled = false,
 }: DraggableEventCardProps) {
     const {
         attributes,
@@ -36,6 +38,7 @@ export default function DraggableEventCard({
         isDragging,
     } = useSortable({
         id: event.id,
+        disabled: disabled,
     });
 
     const style = {

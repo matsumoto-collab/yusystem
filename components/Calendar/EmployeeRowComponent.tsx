@@ -20,6 +20,7 @@ interface EmployeeRowComponentProps {
     projects?: Project[];
     isFirst?: boolean;
     isLast?: boolean;
+    isReadOnly?: boolean;
 }
 
 export default function EmployeeRowComponent({
@@ -36,6 +37,7 @@ export default function EmployeeRowComponent({
     projects = [],
     isFirst = false,
     isLast = false,
+    isReadOnly = false,
 }: EmployeeRowComponentProps) {
 
     const handleDelete = () => {
@@ -139,6 +141,7 @@ export default function EmployeeRowComponent({
                                     onDispatch={() => onDispatch?.(projectId)}
                                     isDispatchConfirmed={project?.isDispatchConfirmed || false}
                                     canDispatch={canDispatch}
+                                    disabled={isReadOnly}
                                 />
                             );
                         })}

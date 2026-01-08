@@ -297,10 +297,10 @@ export default function WeeklyCalendar({ partnerMode = false, partnerId }: Weekl
     return (
         <DndContext
             collisionDetection={closestCenter}
-            onDragStart={handleDragStart}
-            onDragOver={handleDragOver}
-            onDragEnd={handleDragEnd}
-            onDragCancel={handleDragCancel}
+            onDragStart={isReadOnly ? undefined : handleDragStart}
+            onDragOver={isReadOnly ? undefined : handleDragOver}
+            onDragEnd={isReadOnly ? undefined : handleDragEnd}
+            onDragCancel={isReadOnly ? undefined : handleDragCancel}
         >
             <div className="h-full flex flex-col bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden">
                 {/* ヘッダー */}
@@ -442,6 +442,7 @@ export default function WeeklyCalendar({ partnerMode = false, partnerId }: Weekl
                                     }}
                                     canDispatch={isReadOnly ? false : canDispatch}
                                     projects={projects}
+                                    isReadOnly={isReadOnly}
                                 />
                             ))}
                         </div>
