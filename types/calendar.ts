@@ -146,7 +146,7 @@ export const CATEGORY_COLORS: Record<EventCategory, string> = {
 export const CONSTRUCTION_TYPE_COLORS: Record<ConstructionType, string> = {
     assembly: '#a8c8e8',    // 薄い青（Light Blue）
     demolition: '#f0a8a8',  // 薄い赤（Light Red/Pink）
-    other: '#d4a84b',       // Warm Gold
+    other: '#fef08a',       // 薄い黄色（Light Yellow）
 };
 
 // 工事種別のラベル

@@ -41,12 +41,16 @@ export default function ProjectForm({
         // 工事種別(複数選択可能)
         hasAssembly: initialData?.assemblyStartDate != null || initialData?.constructionType === 'assembly',
         hasDemolition: initialData?.demolitionStartDate != null || initialData?.constructionType === 'demolition',
+        hasOther: initialData?.constructionType === 'other',
         // 組立日程
         assemblyStartDate: initialData?.assemblyStartDate || (initialData?.constructionType === 'assembly' ? initialData?.startDate : undefined),
         assemblyEndDate: initialData?.assemblyEndDate,
         // 解体日程
         demolitionStartDate: initialData?.demolitionStartDate || (initialData?.constructionType === 'demolition' ? initialData?.startDate : undefined),
         demolitionEndDate: initialData?.demolitionEndDate,
+        // その他用の日程
+        otherStartDate: initialData?.constructionType === 'other' ? initialData?.startDate : undefined,
+        otherEndDate: initialData?.constructionType === 'other' ? initialData?.endDate : undefined,
         status: initialData?.status || 'pending' as const,
         category: initialData?.category || 'construction' as EventCategory,
         remarks: initialData?.remarks || '',
@@ -100,9 +104,9 @@ export default function ProjectForm({
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        // バリデーション: 少なくとも組立か解体のどちらか1つは選択必須
-        if (!formData.hasAssembly && !formData.hasDemolition) {
-            alert('組立または解体のいずれかを選択してください');
+        // バリデーション: 少なくとも組立、解体、その他のどれか1つは選択必須
+        if (!formData.hasAssembly && !formData.hasDemolition && !formData.hasOther) {
+            alert('組立、解体、その他のいずれかを選択してください');
             return;
         }
 
@@ -116,12 +120,21 @@ export default function ProjectForm({
             ? formData.assemblyStartDate
             : formData.hasDemolition && formData.demolitionStartDate
                 ? formData.demolitionStartDate
-                : initialData?.startDate || defaultDate || new Date();
+                : formData.hasOther && formData.otherStartDate
+                    ? formData.otherStartDate
+                    : initialData?.startDate || defaultDate || new Date();
 
-        // 色の決定: 組立のみなら青、解体のみなら赤、両方なら青
+        // 終了日の設定（その他の場合）
+        const endDate = formData.hasOther && formData.otherEndDate
+            ? formData.otherEndDate
+            : undefined;
+
+        // 色の決定: 組立なら青、解体なら赤、その他なら黄色
         const color = formData.hasAssembly
             ? CONSTRUCTION_TYPE_COLORS.assembly
-            : CONSTRUCTION_TYPE_COLORS.demolition;
+            : formData.hasDemolition
+                ? CONSTRUCTION_TYPE_COLORS.demolition
+                : CONSTRUCTION_TYPE_COLORS.other;
 
         // 複数日スケジュールを使用する場合
         let workSchedules: WorkSchedule[] | undefined = undefined;
@@ -143,14 +156,15 @@ export default function ProjectForm({
             }
         }
 
-        // 工事種別の決定: 組立のみならassembly、解体のみならdemolition、両方ならassembly優先
-        const constructionType = formData.hasAssembly ? 'assembly' : 'demolition';
+        // 工事種別の決定: 組立優先、次に解体、最後にその他
+        const constructionType = formData.hasAssembly ? 'assembly' : formData.hasDemolition ? 'demolition' : 'other';
 
         const projectData: Omit<Project, 'id' | 'createdAt' | 'updatedAt'> = {
             title: formData.title,
             customer: formData.customer || undefined,
             createdBy: formData.selectedManagers.length > 0 ? formData.selectedManagers : undefined,
             startDate: startDate,
+            endDate: endDate,
             assignedEmployeeId: initialData?.assignedEmployeeId || defaultEmployeeId || 'unassigned',
             workers: workers,
             trucks: formData.selectedVehicles.length > 0 ? formData.selectedVehicles : undefined,
@@ -296,6 +310,50 @@ export default function ProjectForm({
                             </div>
                         )}
                     </div>
+
+                    {/* その他 */}
+                    <div className="space-y-2">
+                        <label className="flex items-center space-x-2 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={formData.hasOther}
+                                onChange={(e) => setFormData({ ...formData, hasOther: e.target.checked })}
+                                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                            />
+                            <span
+                                className="text-sm font-medium px-3 py-1 rounded-full"
+                                style={{
+                                    backgroundColor: `${CONSTRUCTION_TYPE_COLORS.other}40`,
+                                    color: '#854d0e', // Darker yellow/brown for text visibility
+                                    border: `2px solid ${CONSTRUCTION_TYPE_COLORS.other}`
+                                }}
+                            >
+                                その他
+                            </span>
+                        </label>
+                        {formData.hasOther && (
+                            <div className="ml-6 grid grid-cols-2 gap-3">
+                                <div>
+                                    <label className="block text-xs text-gray-600 mb-1">開始日</label>
+                                    <input
+                                        type="date"
+                                        value={formData.otherStartDate ? formData.otherStartDate.toISOString().split('T')[0] : ''}
+                                        onChange={(e) => setFormData({ ...formData, otherStartDate: e.target.value ? new Date(e.target.value) : undefined })}
+                                        className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs text-gray-600 mb-1">終了日</label>
+                                    <input
+                                        type="date"
+                                        value={formData.otherEndDate ? formData.otherEndDate.toISOString().split('T')[0] : ''}
+                                        onChange={(e) => setFormData({ ...formData, otherEndDate: e.target.value ? new Date(e.target.value) : undefined })}
+                                        className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 
@@ -342,7 +400,7 @@ export default function ProjectForm({
                             </div>
                         )}
 
-                        {!formData.hasAssembly && !formData.hasDemolition && (
+                        {!formData.hasAssembly && !formData.hasDemolition && !formData.hasOther && (
                             <p className="text-sm text-gray-500 text-center py-4">
                                 工事種別を選択してください
                             </p>
