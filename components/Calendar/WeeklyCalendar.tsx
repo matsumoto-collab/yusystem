@@ -22,7 +22,12 @@ import ForemanSelector from './ForemanSelector';
 import { formatDate, getDayOfWeekString } from '@/utils/dateUtils';
 import { CalendarEvent, Project, Employee } from '@/types/calendar';
 
-export default function WeeklyCalendar() {
+interface WeeklyCalendarProps {
+    partnerMode?: boolean;  // 協力会社モード（閲覧のみ）
+    partnerId?: string;      // 協力会社のユーザーID（チームIDとして使用）
+}
+
+export default function WeeklyCalendar({ partnerMode = false, partnerId }: WeeklyCalendarProps) {
     const { data: session } = useSession();
     const { projects, addProject, updateProject, updateProjects, deleteProject, getCalendarEvents } = useProjects();
     const { totalMembers } = useMasterData();
@@ -32,6 +37,9 @@ export default function WeeklyCalendar() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalInitialData, setModalInitialData] = useState<Partial<Project>>({});
     const [isMounted, setIsMounted] = useState(false);
+
+    // partnerModeの場合は閲覧のみ
+    const isReadOnly = partnerMode;
 
     // 新しいモーダルの状態
     const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
@@ -116,8 +124,15 @@ export default function WeeklyCalendar() {
 
     // 職長別の行データを生成（表示設定された職長のみ、順番も維持）
     const employeeRows = useMemo(() => {
+        // partnerModeの場合は自分のチーム（自分自身のID）のみ表示
+        let targetIds = displayedForemanIds;
+        if (partnerMode && partnerId) {
+            // partnerIdがdisplayedForemanIdsに含まれていれば表示、なければ空
+            targetIds = displayedForemanIds.includes(partnerId) ? [partnerId] : [];
+        }
+
         // displayedForemanIdsの順番を維持してEmployee形式に変換
-        const filteredEmployees: Employee[] = displayedForemanIds
+        const filteredEmployees: Employee[] = targetIds
             .map(id => allForemen.find(f => f.id === id))
             .filter((foreman): foreman is typeof allForemen[0] => foreman !== undefined)
             .map(foreman => ({
@@ -125,7 +140,7 @@ export default function WeeklyCalendar() {
                 name: foreman.displayName,
             }));
         return generateEmployeeRows(filteredEmployees, events, weekDays);
-    }, [events, weekDays, displayedForemanIds, allForemen]);
+    }, [events, weekDays, displayedForemanIds, allForemen, partnerMode, partnerId]);
 
     // ドラッグ中のイベントを取得
     const activeEvent = useMemo(() => {
@@ -133,8 +148,10 @@ export default function WeeklyCalendar() {
         return events.find(event => event.id === activeId);
     }, [activeId, events]);
 
-    // セルクリック時に選択肢を表示
+    // セルクリック時に選択肢を表示（partnerModeの場合は無効）
     const handleCellClick = (employeeId: string, date: Date) => {
+        if (isReadOnly) return; // 閲覧モードでは操作不可
+
         setCellContext({ employeeId, date });
         // 既存案件から選択するか、新規作成するかを選択
         const choice = confirm('既存案件から選択しますか?\n\nOK: 既存案件から選択\nキャンセル: 新規作成');
@@ -391,8 +408,8 @@ export default function WeeklyCalendar() {
                             })}
                         </div>
 
-                        {/* 備考行 */}
-                        <RemarksRow weekDays={weekDays} />
+                        {/* 備考行（partnerModeでは非表示）*/}
+                        {!isReadOnly && <RemarksRow weekDays={weekDays} />}
 
                         {/* 各職長のイベント */}
                         <div className="flex-1 flex flex-col">
@@ -402,21 +419,21 @@ export default function WeeklyCalendar() {
                                     row={row}
                                     weekDays={weekDays}
                                     showEmployeeName={true}
-                                    onEventClick={handleEventClick}
-                                    onCellClick={handleCellClick}
-                                    onMoveEvent={handleMoveEvent}
-                                    onRemoveForeman={removeForeman}
-                                    onMoveForeman={moveForeman}
+                                    onEventClick={isReadOnly ? undefined : handleEventClick}
+                                    onCellClick={isReadOnly ? undefined : handleCellClick}
+                                    onMoveEvent={isReadOnly ? undefined : handleMoveEvent}
+                                    onRemoveForeman={isReadOnly ? undefined : removeForeman}
+                                    onMoveForeman={isReadOnly ? undefined : moveForeman}
                                     isFirst={index === 0}
                                     isLast={index === employeeRows.length - 1}
-                                    onDispatch={(projectId) => {
+                                    onDispatch={isReadOnly ? undefined : (projectId) => {
                                         const project = projects.find(p => p.id === projectId);
                                         if (project) {
                                             setDispatchProject(project);
                                             setIsDispatchModalOpen(true);
                                         }
                                     }}
-                                    canDispatch={canDispatch}
+                                    canDispatch={isReadOnly ? false : canDispatch}
                                     projects={projects}
                                 />
                             ))}

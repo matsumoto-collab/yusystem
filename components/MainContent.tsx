@@ -44,6 +44,14 @@ export default function MainContent() {
                         </div>
                     );
                 }
+                // partnerロールの場合は週間カレンダーのみ表示（閲覧のみ、自分のチームのみ）
+                if (userRole === 'partner') {
+                    return (
+                        <div className="flex-1 min-h-0">
+                            <WeeklyCalendar partnerMode={true} partnerId={userId} />
+                        </div>
+                    );
+                }
                 // Schedule management (calendar/assignment view)
                 return (
                     <>

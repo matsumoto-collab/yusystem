@@ -16,7 +16,7 @@ model User {
   email            String   @unique
   displayName      String
   passwordHash     String
-  role             String   @default("manager")  // admin, manager, foreman1, foreman2, worker
+  role             String   @default("manager")  // admin, manager, foreman1, foreman2, worker, partner
   teamId           String?  // 所属職長ID（職方用）
   assignedProjects String?  // JSON array of project IDs
   isActive         Boolean  @default(true)

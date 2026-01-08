@@ -164,8 +164,8 @@ export default function Sidebar() {
                 <nav className="flex-1 overflow-y-auto py-6 px-3">
                     {navigationSections
                         .map(section => {
-                            // workerロールの場合、スケジュール管理のみ表示
-                            if (session?.user?.role === 'worker') {
+                            // workerまたはpartnerロールの場合、スケジュール管理のみ表示
+                            if (session?.user?.role === 'worker' || session?.user?.role === 'partner') {
                                 if (section.title !== '業務管理') return null;
                                 const filteredItems = section.items.filter(item => item.page === 'schedule');
                                 if (filteredItems.length === 0) return null;
