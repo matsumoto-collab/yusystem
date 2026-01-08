@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useProjects } from '@/contexts/ProjectContext';
 import { useCalendarDisplay } from '@/contexts/CalendarDisplayContext';
-import { mockEmployees } from '@/data/mockEmployees';
+
 import { formatDateKey } from '@/utils/employeeUtils';
 import { ChevronLeft, ChevronRight, Clock, MapPin, Users, Truck, CheckCircle } from 'lucide-react';
 
@@ -14,7 +14,7 @@ interface AssignmentTableProps {
 
 export default function AssignmentTable({ userRole = 'manager', userTeamId }: AssignmentTableProps) {
     const { projects } = useProjects();
-    const { displayedForemanIds } = useCalendarDisplay();
+    const { displayedForemanIds, allForemen } = useCalendarDisplay();
 
     // ワーカー・車両名のマップ
     const [workerNameMap, setWorkerNameMap] = useState<Map<string, string>>(new Map());
@@ -64,12 +64,12 @@ export default function AssignmentTable({ userRole = 'manager', userTeamId }: As
         return tomorrow;
     });
 
-    // 表示する職長リスト（mockEmployeesからdisplayedForemanIdsでフィルタリング）
+    // 表示する職長リスト（allForemenからdisplayedForemanIdsでフィルタリング）
     const foremen = useMemo(() => {
-        return mockEmployees
-            .filter(emp => displayedForemanIds.includes(emp.id) && emp.id !== '1') // '1'は備考なので除外
-            .map(emp => ({ id: emp.id, name: emp.name }));
-    }, [displayedForemanIds]);
+        return allForemen
+            .filter(user => displayedForemanIds.includes(user.id))
+            .map(user => ({ id: user.id, name: user.displayName }));
+    }, [displayedForemanIds, allForemen]);
 
     // 日付をフォーマット
     const formatDisplayDate = (date: Date) => {
@@ -183,7 +183,7 @@ export default function AssignmentTable({ userRole = 'manager', userTeamId }: As
                                 ) : (
                                     Object.values(assignmentsByEmployee).flat().map(project => {
                                         // 職長名を取得
-                                        const foremanName = mockEmployees.find(emp => emp.id === project.assignedEmployeeId)?.name || '未設定';
+                                        const foremanName = allForemen.find(user => user.id === project.assignedEmployeeId)?.displayName || '未設定';
 
                                         return (
                                             <div key={project.id} className="p-4 hover:bg-slate-50 transition-colors">

@@ -2,7 +2,12 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
-import { mockEmployees } from '@/data/mockEmployees';
+
+interface ForemanUser {
+    id: string;
+    displayName: string;
+    role: string;
+}
 
 interface CalendarDisplayContextType {
     displayedForemanIds: string[];
@@ -10,6 +15,8 @@ interface CalendarDisplayContextType {
     addForeman: (employeeId: string) => Promise<void>;
     removeForeman: (employeeId: string) => Promise<void>;
     getAvailableForemen: () => { id: string; name: string }[];
+    allForemen: ForemanUser[];
+    getForemanName: (id: string) => string;
 }
 
 const CalendarDisplayContext = createContext<CalendarDisplayContextType | undefined>(undefined);
@@ -17,18 +24,25 @@ const CalendarDisplayContext = createContext<CalendarDisplayContextType | undefi
 export function CalendarDisplayProvider({ children }: { children: React.ReactNode }) {
     const { status } = useSession();
     const [displayedForemanIds, setDisplayedForemanIds] = useState<string[]>([]);
+    const [allForemen, setAllForemen] = useState<ForemanUser[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Get default foreman IDs
-    const getDefaultForemanIds = useCallback(() => {
-        return mockEmployees.filter(e => e.id !== '1').map(e => e.id);
+    // Fetch all available foremen from API
+    const fetchForemen = useCallback(async () => {
+        try {
+            const response = await fetch('/api/dispatch/foremen');
+            if (response.ok) {
+                const data = await response.json();
+                setAllForemen(data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch foremen:', error);
+        }
     }, []);
 
     // Fetch from API
     const fetchSettings = useCallback(async () => {
         if (status !== 'authenticated') {
-            // Use default if not authenticated
-            setDisplayedForemanIds(getDefaultForemanIds());
             setIsLoading(false);
             return;
         }
@@ -39,24 +53,26 @@ export function CalendarDisplayProvider({ children }: { children: React.ReactNod
                 const data = await response.json();
                 if (data.displayedForemanIds && data.displayedForemanIds.length > 0) {
                     setDisplayedForemanIds(data.displayedForemanIds);
-                } else {
-                    // Use default if no settings
-                    setDisplayedForemanIds(getDefaultForemanIds());
                 }
-            } else {
-                setDisplayedForemanIds(getDefaultForemanIds());
             }
         } catch (error) {
             console.error('Failed to fetch user settings:', error);
-            setDisplayedForemanIds(getDefaultForemanIds());
         } finally {
             setIsLoading(false);
         }
-    }, [status, getDefaultForemanIds]);
+    }, [status]);
 
     useEffect(() => {
-        fetchSettings();
-    }, [fetchSettings]);
+        fetchForemen();
+    }, [fetchForemen]);
+
+    useEffect(() => {
+        if (status === 'authenticated') {
+            fetchSettings();
+        } else {
+            setIsLoading(false);
+        }
+    }, [status, fetchSettings]);
 
     const saveSettings = useCallback(async (newIds: string[]) => {
         if (status !== 'authenticated') return;
@@ -87,10 +103,15 @@ export function CalendarDisplayProvider({ children }: { children: React.ReactNod
     }, [displayedForemanIds, saveSettings]);
 
     const getAvailableForemen = useCallback(() => {
-        return mockEmployees
-            .filter(emp => emp.id !== '1' && !displayedForemanIds.includes(emp.id))
-            .map(emp => ({ id: emp.id, name: emp.name }));
-    }, [displayedForemanIds]);
+        return allForemen
+            .filter(user => !displayedForemanIds.includes(user.id))
+            .map(user => ({ id: user.id, name: user.displayName }));
+    }, [allForemen, displayedForemanIds]);
+
+    const getForemanName = useCallback((id: string) => {
+        const foreman = allForemen.find(f => f.id === id);
+        return foreman?.displayName || '不明';
+    }, [allForemen]);
 
     return (
         <CalendarDisplayContext.Provider value={{
@@ -99,6 +120,8 @@ export function CalendarDisplayProvider({ children }: { children: React.ReactNod
             addForeman,
             removeForeman,
             getAvailableForemen,
+            allForemen,
+            getForemanName,
         }}>
             {children}
         </CalendarDisplayContext.Provider>

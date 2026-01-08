@@ -9,7 +9,7 @@ import { useProjects } from '@/contexts/ProjectContext';
 import { useMasterData } from '@/hooks/useMasterData';
 import { useVacation } from '@/contexts/VacationContext';
 import { useCalendarDisplay } from '@/contexts/CalendarDisplayContext';
-import { mockEmployees, unassignedEmployee } from '@/data/mockEmployees';
+import { unassignedEmployee } from '@/data/mockEmployees';
 import { generateEmployeeRows, formatDateKey } from '@/utils/employeeUtils';
 import CalendarHeader from './CalendarHeader';
 import EmployeeRowComponent from './EmployeeRowComponent';
@@ -20,14 +20,14 @@ import DispatchConfirmModal from './DispatchConfirmModal';
 import RemarksRow from './RemarksRow';
 import ForemanSelector from './ForemanSelector';
 import { formatDate, getDayOfWeekString } from '@/utils/dateUtils';
-import { CalendarEvent, Project } from '@/types/calendar';
+import { CalendarEvent, Project, Employee } from '@/types/calendar';
 
 export default function WeeklyCalendar() {
     const { data: session } = useSession();
     const { projects, addProject, updateProject, updateProjects, deleteProject, getCalendarEvents } = useProjects();
     const { totalMembers } = useMasterData();
     const { getVacationEmployees } = useVacation();
-    const { displayedForemanIds, removeForeman } = useCalendarDisplay();
+    const { displayedForemanIds, removeForeman, allForemen } = useCalendarDisplay();
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalInitialData, setModalInitialData] = useState<Partial<Project>>({});
@@ -116,11 +116,15 @@ export default function WeeklyCalendar() {
 
     // 職長別の行データを生成（表示設定された職長のみ）
     const employeeRows = useMemo(() => {
-        const filteredEmployees = mockEmployees.filter(emp =>
-            displayedForemanIds.includes(emp.id)
-        );
+        // allForemenからEmployee形式に変換し、表示設定されたもののみフィルタ
+        const filteredEmployees: Employee[] = allForemen
+            .filter(foreman => displayedForemanIds.includes(foreman.id))
+            .map(foreman => ({
+                id: foreman.id,
+                name: foreman.displayName,
+            }));
         return generateEmployeeRows(filteredEmployees, events, weekDays);
-    }, [events, weekDays, displayedForemanIds]);
+    }, [events, weekDays, displayedForemanIds, allForemen]);
 
     // ドラッグ中のイベントを取得
     const activeEvent = useMemo(() => {
