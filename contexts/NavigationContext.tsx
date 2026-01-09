@@ -3,16 +3,16 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 type PageType =
-    | 'schedule'      // スケジュール管理
-    | 'projects'      // 案件一覧
-    | 'reports'       // 日報一覧
-    | 'estimates'     // 見積書
-    | 'invoices'      // 請求書
-    | 'orders'        // 発注書
-    | 'partners'      // 協力会社
-    | 'customers'     // 顧客管理
-    | 'company'       // 自社情報
-    | 'settings';     // 設定
+    | 'schedule'         // スケジュール管理
+    | 'project-masters'  // 案件マスター管理
+    | 'reports'          // 日報一覧
+    | 'estimates'        // 見積書
+    | 'invoices'         // 請求書
+    | 'orders'           // 発注書
+    | 'partners'         // 協力会社
+    | 'customers'        // 顧客管理
+    | 'company'          // 自社情報
+    | 'settings';        // 設定
 
 interface NavigationContextType {
     activePage: PageType;

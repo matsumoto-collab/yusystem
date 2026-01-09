@@ -147,32 +147,36 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     // Add project (creates both ProjectMaster and Assignment)
     const addProject = useCallback(async (project: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>) => {
         try {
-            // First, check if project master exists or create new one
             let projectMasterId: string;
 
-            // Try to find existing project master by title
-            const mastersRes = await fetch(`/api/project-masters?search=${encodeURIComponent(project.title)}`);
-            const masters = await mastersRes.json();
-            const existing = masters.find((m: ProjectMaster) => m.title === project.title);
-
-            if (existing) {
-                projectMasterId = existing.id;
+            // If projectMasterId is already provided (from ProjectMasterSearchModal), use it directly
+            if (project.projectMasterId) {
+                projectMasterId = project.projectMasterId;
             } else {
-                // Create new project master
-                const createMasterRes = await fetch('/api/project-masters', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        title: project.title,
-                        customer: project.customer,
-                        constructionType: project.constructionType || 'other',
-                        location: project.location,
-                        description: project.description,
-                        remarks: project.remarks,
-                    }),
-                });
-                const newMaster = await createMasterRes.json();
-                projectMasterId = newMaster.id;
+                // Check if project master exists by title or create new one
+                const mastersRes = await fetch(`/api/project-masters?search=${encodeURIComponent(project.title)}`);
+                const masters = await mastersRes.json();
+                const existing = masters.find((m: ProjectMaster) => m.title === project.title);
+
+                if (existing) {
+                    projectMasterId = existing.id;
+                } else {
+                    // Create new project master
+                    const createMasterRes = await fetch('/api/project-masters', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            title: project.title,
+                            customer: project.customer,
+                            constructionType: project.constructionType || 'other',
+                            location: project.location,
+                            description: project.description,
+                            remarks: project.remarks,
+                        }),
+                    });
+                    const newMaster = await createMasterRes.json();
+                    projectMasterId = newMaster.id;
+                }
             }
 
             // Create assignment

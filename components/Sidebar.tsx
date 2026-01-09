@@ -23,7 +23,7 @@ import {
 interface NavItem {
     name: string;
     icon: React.ElementType;
-    page: 'schedule' | 'projects' | 'reports' | 'estimates' | 'invoices' | 'orders' | 'partners' | 'customers' | 'company' | 'settings';
+    page: 'schedule' | 'project-masters' | 'reports' | 'estimates' | 'invoices' | 'orders' | 'partners' | 'customers' | 'company' | 'settings';
 }
 
 interface NavSection {
@@ -36,7 +36,7 @@ const navigationSections: NavSection[] = [
         title: '業務管理',
         items: [
             { name: 'スケジュール管理', icon: Home, page: 'schedule' },
-            { name: '案件一覧', icon: Briefcase, page: 'projects' },
+            { name: '案件マスター管理', icon: Briefcase, page: 'project-masters' },
             { name: '日報一覧', icon: FileText, page: 'reports' },
         ],
     },

@@ -7,7 +7,7 @@ import WeeklyCalendar from './Calendar/WeeklyCalendar';
 import ScheduleViewTabs, { ScheduleView } from './Schedule/ScheduleViewTabs';
 import AssignmentTable from './Schedule/AssignmentTable';
 import SettingsPage from '@/app/settings/page';
-import ProjectListPage from '@/app/projects/page';
+import ProjectMasterListPage from '@/app/project-masters/page';
 import EstimateListPage from '@/app/estimates/page';
 import InvoiceListPage from '@/app/invoices/page';
 import CustomersPage from '@/app/customers/page';
@@ -73,8 +73,8 @@ export default function MainContent() {
                 // Settings page (master data management)
                 return <SettingsPage />;
 
-            case 'projects':
-                return <ProjectListPage />;
+            case 'project-masters':
+                return <ProjectMasterListPage />;
 
             case 'estimates':
                 return <EstimateListPage />;
