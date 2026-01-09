@@ -1,14 +1,20 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Project, EventCategory, CONSTRUCTION_TYPE_COLORS, DailySchedule, WorkSchedule } from '@/types/calendar';
 import { useMasterData } from '@/hooks/useMasterData';
 import { useProjects } from '@/contexts/ProjectContext';
 import { formatDateKey } from '@/utils/employeeUtils';
 import VehicleModal from '../VehicleModal';
 import MultiDayScheduleEditor from './MultiDayScheduleEditor';
-import { Plus } from 'lucide-react';
+import { Plus, User } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
+
+interface ManagerUser {
+    id: string;
+    displayName: string;
+    role: string;
+}
 
 interface ProjectFormProps {
     initialData?: Partial<Project>;
@@ -26,7 +32,7 @@ export default function ProjectForm({
     defaultEmployeeId,
 }: ProjectFormProps) {
     const { projects } = useProjects();
-    const { vehicles: mockVehicles, managers: mockManagers, totalMembers: TOTAL_MEMBERS } = useMasterData();
+    const { vehicles: mockVehicles, totalMembers: TOTAL_MEMBERS } = useMasterData();
 
     const [formData, setFormData] = useState({
         title: initialData?.title || '',
@@ -62,6 +68,29 @@ export default function ProjectForm({
     const [demolitionSchedules, setDemolitionSchedules] = useState<DailySchedule[]>([]);
 
     const [isVehicleModalOpen, setIsVehicleModalOpen] = useState(false);
+
+    // Admin/Manager users for project manager selection (from API)
+    const [apiManagers, setApiManagers] = useState<ManagerUser[]>([]);
+
+    // Fetch admin/manager users from API
+    useEffect(() => {
+        const fetchManagers = async () => {
+            try {
+                const res = await fetch('/api/users');
+                if (res.ok) {
+                    const users = await res.json();
+                    // Filter only admin and manager roles
+                    const filtered = users.filter((u: ManagerUser) =>
+                        u.role === 'admin' || u.role === 'manager'
+                    );
+                    setApiManagers(filtered);
+                }
+            } catch (error) {
+                console.error('Failed to fetch managers:', error);
+            }
+        };
+        fetchManagers();
+    }, []);
 
     // 残りのメンバー数を計算
     const availableMembers = useMemo(() => {
@@ -412,20 +441,28 @@ export default function ProjectForm({
             {/* 案件担当者（チェックボックス） */}
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <User className="inline w-4 h-4 mr-1" />
                     案件担当者
                 </label>
-                <div className="grid grid-cols-2 gap-2 border border-gray-200 rounded-md p-3">
-                    {mockManagers.map(manager => (
-                        <label key={manager.id} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
-                            <input
-                                type="checkbox"
-                                checked={formData.selectedManagers.includes(manager.name)}
-                                onChange={() => handleManagerToggle(manager.name)}
-                                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                            />
-                            <span className="text-sm text-gray-700">{manager.name}</span>
-                        </label>
-                    ))}
+                <div className="flex flex-wrap gap-2 border border-gray-200 rounded-md p-3">
+                    {apiManagers.length > 0 ? (
+                        apiManagers.map(manager => (
+                            <label key={manager.id} className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100">
+                                <input
+                                    type="checkbox"
+                                    checked={formData.selectedManagers.includes(manager.id)}
+                                    onChange={() => handleManagerToggle(manager.id)}
+                                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                />
+                                <span className="text-sm text-gray-700">{manager.displayName}</span>
+                                <span className={`text-xs px-1.5 py-0.5 rounded ${manager.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
+                                    {manager.role === 'admin' ? '管理者' : 'マネージャー'}
+                                </span>
+                            </label>
+                        ))
+                    ) : (
+                        <span className="text-sm text-gray-500">担当者を読み込み中...</span>
+                    )}
                 </div>
                 {formData.selectedManagers.length > 0 && (
                     <p className="text-xs text-gray-500 mt-1">
