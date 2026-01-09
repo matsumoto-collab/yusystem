@@ -41,7 +41,7 @@ export default function ProjectMasterSearchModal({
             results = results.filter(
                 (pm) =>
                     pm.title.toLowerCase().includes(lowerQuery) ||
-                    pm.customer?.toLowerCase().includes(lowerQuery) ||
+                    pm.customerName?.toLowerCase().includes(lowerQuery) ||
                     pm.location?.toLowerCase().includes(lowerQuery)
             );
         }
@@ -191,8 +191,8 @@ export default function ProjectMasterSearchModal({
                                                 {pm.title}
                                             </h3>
                                             <div className="flex items-center gap-4 mt-1 text-sm text-gray-600">
-                                                {pm.customer && (
-                                                    <span>顧客: {pm.customer}</span>
+                                                {pm.customerName && (
+                                                    <span>顧客: {pm.customerName}</span>
                                                 )}
                                                 {pm.location && (
                                                     <span>場所: {pm.location}</span>
