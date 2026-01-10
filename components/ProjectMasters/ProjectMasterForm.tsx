@@ -186,7 +186,7 @@ export function ProjectMasterForm({ formData, setFormData, onSubmit, onCancel, i
     return (
         <div className="space-y-4">
             {/* 基本情報セクション */}
-            <div className="border border-gray-200 rounded-lg overflow-hidden">
+            <div className="border border-gray-200 rounded-lg">
                 <button
                     type="button"
                     onClick={() => toggleSection('basic')}
