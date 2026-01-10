@@ -283,7 +283,7 @@ export function ProjectMasterForm({ formData, setFormData, onSubmit, onCancel, i
                                 />
                             </div>
                             {showCustomerDropdown && (
-                                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
+                                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
                                     {filteredCustomers.map(customer => (
                                         <button
                                             key={customer.id}
