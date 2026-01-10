@@ -87,6 +87,19 @@ export function ProjectMasterProvider({ children }: { children: ReactNode }) {
         };
     }, [fetchProjectMasters]);
 
+    // Browser event listener for cross-context sync (fallback for Supabase Realtime)
+    useEffect(() => {
+        const handleProjectMasterCreated = () => {
+            console.log('[ProjectMaster] Browser event received, refreshing...');
+            fetchProjectMasters();
+        };
+
+        window.addEventListener('projectMasterCreated', handleProjectMasterCreated);
+        return () => {
+            window.removeEventListener('projectMasterCreated', handleProjectMasterCreated);
+        };
+    }, [fetchProjectMasters]);
+
     const createProjectMaster = useCallback(async (data: Omit<ProjectMaster, 'id' | 'createdAt' | 'updatedAt'>): Promise<ProjectMaster> => {
         const res = await fetch('/api/project-masters', {
             method: 'POST',

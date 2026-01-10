@@ -176,6 +176,11 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
                     });
                     const newMaster = await createMasterRes.json();
                     projectMasterId = newMaster.id;
+
+                    // Dispatch custom event to notify ProjectMasterContext
+                    if (typeof window !== 'undefined') {
+                        window.dispatchEvent(new CustomEvent('projectMasterCreated', { detail: newMaster }));
+                    }
                 }
             }
 
