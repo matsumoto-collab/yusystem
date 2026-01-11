@@ -11,6 +11,7 @@ import ProjectMasterListPage from '@/app/project-masters/page';
 import EstimateListPage from '@/app/estimates/page';
 import InvoiceListPage from '@/app/invoices/page';
 import CustomersPage from '@/app/customers/page';
+import DailyReportPage from '@/app/daily-reports/page';
 
 // Placeholder component for未実装 pages
 function PlaceholderPage({ title }: { title: string }) {
@@ -83,7 +84,7 @@ export default function MainContent() {
                 return <InvoiceListPage />;
 
             case 'reports':
-                return <PlaceholderPage title="日報一覧" />;
+                return <DailyReportPage />;
 
             case 'orders':
                 return <PlaceholderPage title="発注書" />;
