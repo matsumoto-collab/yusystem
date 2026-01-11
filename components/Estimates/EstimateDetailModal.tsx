@@ -30,12 +30,25 @@ export default function EstimateDetailModal({
     const [activeTab, setActiveTab] = useState<'estimate' | 'budget'>('estimate');
     const [includeCoverPage, setIncludeCoverPage] = useState(true);
 
+    // projectがnullの場合はestimateからダミーのProjectを作成
+    const effectiveProject: Project = project || {
+        id: estimate?.id || '',
+        title: estimate?.title || '',
+        startDate: new Date(),
+        category: 'construction' as const,
+        color: '#3B82F6',
+        customer: '',
+        location: '',
+        createdAt: estimate?.createdAt || new Date(),
+        updatedAt: estimate?.updatedAt || new Date(),
+    };
+
     useEffect(() => {
         let currentUrl = '';
-        if (isOpen && estimate && project && companyInfo) {
+        if (isOpen && estimate && companyInfo) {
             const generatePDF = async () => {
                 try {
-                    const url = await generateEstimatePDFBlob(estimate, project, companyInfo, { includeCoverPage });
+                    const url = await generateEstimatePDFBlob(estimate, effectiveProject, companyInfo, { includeCoverPage });
                     currentUrl = url;
                     setPdfUrl(url);
                 } catch (error) {
@@ -51,11 +64,11 @@ export default function EstimateDetailModal({
                 URL.revokeObjectURL(currentUrl);
             }
         };
-    }, [isOpen, estimate, project, companyInfo, includeCoverPage]);
+    }, [isOpen, estimate, effectiveProject, companyInfo, includeCoverPage]);
 
     const handleDownload = () => {
-        if (estimate && project && companyInfo) {
-            exportEstimatePDF(estimate, project, companyInfo, { includeCoverPage });
+        if (estimate && companyInfo) {
+            exportEstimatePDF(estimate, effectiveProject, companyInfo, { includeCoverPage });
         }
     };
 
@@ -77,7 +90,7 @@ export default function EstimateDetailModal({
         }
     };
 
-    if (!isOpen || !estimate || !project) {
+    if (!isOpen || !estimate) {
         return null;
     }
 
@@ -99,7 +112,7 @@ export default function EstimateDetailModal({
                                 <div>
                                     <div className="text-sm text-gray-500">見積書</div>
                                     <h2 className="text-2xl font-bold text-gray-800">
-                                        {project.title}
+                                        {effectiveProject.title}
                                     </h2>
                                 </div>
                             </div>

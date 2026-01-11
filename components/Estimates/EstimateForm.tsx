@@ -461,9 +461,11 @@ export default function EstimateForm({ initialData, onSubmit, onCancel }: Estima
                                         <input
                                             type="number"
                                             value={item.quantity}
-                                            onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value) || 0)}
+                                            onChange={(e) => {
+                                                const val = parseFloat(e.target.value);
+                                                updateItem(item.id, 'quantity', isNaN(val) ? 0 : val);
+                                            }}
                                             className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                            min="0"
                                             step="0.01"
                                         />
                                     </td>
@@ -480,7 +482,10 @@ export default function EstimateForm({ initialData, onSubmit, onCancel }: Estima
                                         <input
                                             type="number"
                                             value={item.unitPrice}
-                                            onChange={(e) => updateItem(item.id, 'unitPrice', parseFloat(e.target.value) || 0)}
+                                            onChange={(e) => {
+                                                const val = parseFloat(e.target.value);
+                                                updateItem(item.id, 'unitPrice', isNaN(val) ? 0 : val);
+                                            }}
                                             className={`w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 ${item.unitPrice < 0 ? 'text-red-600' : ''}`}
                                         />
                                     </td>
