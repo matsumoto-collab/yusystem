@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Estimate } from '@/types/estimate';
 import { Project } from '@/types/calendar';
 import { CompanyInfo } from '@/types/company';
@@ -30,8 +30,8 @@ export default function EstimateDetailModal({
     const [activeTab, setActiveTab] = useState<'estimate' | 'budget'>('estimate');
     const [includeCoverPage, setIncludeCoverPage] = useState(true);
 
-    // projectがnullの場合はestimateからダミーのProjectを作成
-    const effectiveProject: Project = project || {
+    // projectがnullの場合はestimateからダミーのProjectを作成（useMemoでメモ化）
+    const effectiveProject: Project = useMemo(() => project || {
         id: estimate?.id || '',
         title: estimate?.title || '',
         startDate: new Date(),
@@ -41,7 +41,7 @@ export default function EstimateDetailModal({
         location: '',
         createdAt: estimate?.createdAt || new Date(),
         updatedAt: estimate?.updatedAt || new Date(),
-    };
+    }, [project, estimate?.id, estimate?.title, estimate?.createdAt, estimate?.updatedAt]);
 
     useEffect(() => {
         let currentUrl = '';
