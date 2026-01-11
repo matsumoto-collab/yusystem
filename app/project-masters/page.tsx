@@ -5,6 +5,7 @@ import { useProjectMasters } from '@/contexts/ProjectMasterContext';
 import { ProjectMaster, ConstructionContentType, ScaffoldingSpec } from '@/types/calendar';
 import { Plus, Edit2, Trash2, Search, Calendar, ChevronDown, ChevronUp, MapPin, Building } from 'lucide-react';
 import { ProjectMasterForm, ProjectMasterFormData, DEFAULT_FORM_DATA } from '@/components/ProjectMasters/ProjectMasterForm';
+import ProjectProfitDisplay from '@/components/ProjectMaster/ProjectProfitDisplay';
 
 export default function ProjectMasterListPage() {
     const { projectMasters, isLoading, createProjectMaster, updateProjectMaster, deleteProjectMaster } = useProjectMasters();
@@ -425,6 +426,11 @@ export default function ProjectMasterListPage() {
                                                     </div>
                                                 </div>
                                             )}
+
+                                            {/* 利益サマリー */}
+                                            <div className="mt-4">
+                                                <ProjectProfitDisplay projectMasterId={pm.id} />
+                                            </div>
                                         </div>
                                     )}
                                 </>
