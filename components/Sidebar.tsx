@@ -18,12 +18,13 @@ import {
     ChevronRight,
     User as UserIcon,
     X,
+    BarChart3,
 } from 'lucide-react';
 
 interface NavItem {
     name: string;
     icon: React.ElementType;
-    page: 'schedule' | 'project-masters' | 'reports' | 'estimates' | 'invoices' | 'orders' | 'partners' | 'customers' | 'company' | 'settings';
+    page: 'schedule' | 'project-masters' | 'reports' | 'profit-dashboard' | 'estimates' | 'invoices' | 'orders' | 'partners' | 'customers' | 'company' | 'settings';
 }
 
 interface NavSection {
@@ -46,6 +47,7 @@ const navigationSections: NavSection[] = [
             { name: '見積書', icon: FileSpreadsheet, page: 'estimates' },
             { name: '請求書', icon: Receipt, page: 'invoices' },
             { name: '発注書', icon: ShoppingCart, page: 'orders' },
+            { name: '利益ダッシュボード', icon: BarChart3, page: 'profit-dashboard' },
         ],
     },
     {
